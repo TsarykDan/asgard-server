@@ -101,7 +101,6 @@ MDScreenManager:
             md_bg_color: 0.08, 0.1, 0.16, 1
             radius: [0, 0, 16, 16]
 
-            # Іконки дій
             MDBoxLayout:
                 size_hint_y: None
                 height: "30dp"
@@ -137,7 +136,6 @@ MDScreenManager:
                 text_color: 0.95, 0.75, 0.2, 1
                 adaptive_height: True
 
-            # Данні гравця
             MDBoxLayout:
                 adaptive_size: True
                 pos_hint: {'center_x': 0.5}
@@ -160,7 +158,6 @@ MDScreenManager:
                     text_color: 0.9, 0.75, 0.2, 1
                     adaptive_size: True
 
-            # VIP / ТЕГ РОЛІ
             MDCard:
                 size_hint: None, None
                 size: "120dp", "24dp"
@@ -185,7 +182,6 @@ MDScreenManager:
                 text_color: 0.8, 0.65, 0.2, 1
                 adaptive_height: True
 
-            # СІТКА КНОПОК МЕНЮ
             MDGridLayout:
                 cols: 3
                 spacing: "5dp"
@@ -206,7 +202,7 @@ MDScreenManager:
                     on_release: root.show_tab('citizens')
                 GoldButton:
                     text: "НАКАЗИ"
-                    icon: "scroll-outline"
+                    icon: "scroll-text"
                     on_release: root.show_tab('chat')
                 GoldButton:
                     text: "ПЕРЕКАЗИ"
@@ -263,7 +259,7 @@ MDScreenManager:
 
                 MDTextField:
                     id: msg_input
-                    hint_text: "Написати в чат..."
+                    hint_text: "Написати в загальний чат..."
                     mode: "round"
                     fill_color_normal: 0.08, 0.1, 0.15, 1
                     line_color_focus: 0.85, 0.65, 0.13, 1
@@ -395,7 +391,7 @@ class MainGameScreen(MDScreen):
                     adaptive_height=True
                 )
                 time_lbl = MDLabel(
-                    text=msg['timestamp'],
+                    text=msg.get('timestamp', ''),
                     font_style="Caption",
                     halign="right",
                     theme_text_color="Custom",
@@ -456,16 +452,58 @@ class MainGameScreen(MDScreen):
         except Exception:
             pass
 
+    # --- ІНТЕРАКТИВНИЙ МАГАЗИН ---
     def load_shop(self):
         container = self.ids.dynamic_content
         container.clear_widgets()
-        lbl = MDLabel(
-            text="🛒 КОРОЛІВСЬКИЙ МАГАЗИН\n\n1. VIP-Статус — 500 UNIT\n2. Охорона землі — 200 UNIT\n3. Зниження податків — 1000 UNIT",
+
+        items = [
+            {"id": "vip", "name": "VIP-Статус", "price": 500},
+            {"id": "guard", "name": "Охорона землі", "price": 200},
+            {"id": "tax", "name": "Зниження податків", "price": 1000}
+        ]
+
+        title = MDLabel(
+            text="🛒 КОРОЛІВСЬКИЙ МАГАЗИН",
+            font_style="Subtitle1",
+            bold=True,
             theme_text_color="Custom",
-            text_color=(0.9, 0.9, 0.9, 1),
+            text_color=(0.85, 0.65, 0.13, 1),
             adaptive_height=True
         )
-        container.add_widget(lbl)
+        container.add_widget(title)
+
+        for item in items:
+            box = MDBoxLayout(
+                orientation='horizontal',
+                adaptive_height=True,
+                padding="10dp",
+                spacing="10dp",
+                md_bg_color=(0.08, 0.1, 0.15, 1),
+                radius=[8]
+            )
+            lbl = MDLabel(
+                text=f"{item['name']}\nЦіна: {item['price']} UNIT",
+                theme_text_color="Custom",
+                text_color=(0.9, 0.9, 0.9, 1),
+                adaptive_height=True
+            )
+            btn = MDRaisedButton(
+                text="КУПИТИ",
+                md_bg_color=(0.85, 0.65, 0.13, 1),
+                text_color=(0, 0, 0, 1),
+                on_release=lambda x, i=item: self.buy_item(i)
+            )
+            box.add_widget(lbl)
+            box.add_widget(btn)
+            container.add_widget(box)
+
+    def buy_item(self, item):
+        try:
+            res = requests.post(f"{SERVER_URL}/buy_item", json={"username": self.user_data['username'], "item_id": item['id']}, timeout=3).json()
+            self.update_header()
+        except Exception:
+            pass
 
     def load_market(self):
         container = self.ids.dynamic_content
@@ -504,33 +542,120 @@ class MainGameScreen(MDScreen):
             except Exception:
                 pass
 
+    # --- ІНТЕРАКТИВНЕ КАЗИНО (ВВЕДЕННЯ СТАВКИ) ---
     def load_casino_ui(self):
         container = self.ids.dynamic_content
         container.clear_widgets()
+
+        box = MDBoxLayout(orientation='vertical', spacing="12dp", adaptive_height=True)
+
         lbl = MDLabel(
-            text="🎰 КАЗИНО АЗГАРДУ\n\nЗробіть ставку та випробуйте удачу!",
+            text="🎰 КАЗИНО АЗГАРДУ\nВведіть суму ставки та випробуйте удачу!",
             theme_text_color="Custom",
             text_color=(0.9, 0.9, 0.9, 1),
             adaptive_height=True
         )
-        btn = MDRaisedButton(
-            text="КРУТИТИ (50 UNIT)",
-            md_bg_color=(0.85, 0.65, 0.13, 1),
-            text_color=(0,0,0,1)
+        
+        self.bet_input = MDTextField(
+            hint_text="Сума ставки (UNIT)",
+            mode="round",
+            input_filter="int",
+            fill_color_normal=(0.08, 0.1, 0.15, 1)
         )
-        container.add_widget(lbl)
-        container.add_widget(btn)
 
+        btn = MDRaisedButton(
+            text="ЗРОБИТИ СТАВКУ ТА ЗАКРУТИТИ",
+            md_bg_color=(0.85, 0.65, 0.13, 1),
+            text_color=(0, 0, 0, 1),
+            on_release=lambda x: self.spin_casino()
+        )
+
+        self.casino_res_lbl = MDLabel(
+            text="",
+            bold=True,
+            adaptive_height=True
+        )
+
+        box.add_widget(lbl)
+        box.add_widget(self.bet_input)
+        box.add_widget(btn)
+        box.add_widget(self.casino_res_lbl)
+        container.add_widget(box)
+
+    def spin_casino(self):
+        val = self.bet_input.text.strip()
+        if not val or int(val) <= 0:
+            self.casino_res_lbl.text = "Введіть коректну ставку!"
+            self.casino_res_lbl.text_color = (0.9, 0.2, 0.2, 1)
+            return
+
+        try:
+            res = requests.post(f"{SERVER_URL}/casino_spin", json={"username": self.user_data['username'], "bet": int(val)}, timeout=3).json()
+            if res.get("status") == "ok":
+                win = res.get("win_amount", 0)
+                if win > 0:
+                    self.casino_res_lbl.text = f"🎉 Виграш! +{win} UNIT!"
+                    self.casino_res_lbl.text_color = (0.2, 0.8, 0.4, 1)
+                else:
+                    self.casino_res_lbl.text = f"❌ Непощастило. -{val} UNIT"
+                    self.casino_res_lbl.text_color = (0.9, 0.2, 0.2, 1)
+                self.update_header()
+            else:
+                self.casino_res_lbl.text = res.get("message", "Помилка!")
+                self.casino_res_lbl.text_color = (0.9, 0.2, 0.2, 1)
+        except Exception:
+            self.casino_res_lbl.text = "Помилка зв'язку з сервером!"
+
+    # --- ІНТЕРАКТИВНІ ПРИВАТНІ ПОВІДОМЛЕННЯ (ЛС) ---
     def load_pm_ui(self):
         container = self.ids.dynamic_content
         container.clear_widgets()
+
+        box = MDBoxLayout(orientation='vertical', spacing="10dp", adaptive_height=True)
+
         lbl = MDLabel(
-            text="💬 ПРИВАТНІ ПОВІДОМЛЕННЯ\n\nВиберіть гравця зі списку 'ГРАВЦІ' для початку листування.",
+            text="💬 ПРИВАТНІ ПОВІДОМЛЕННЯ (ЛС)",
+            font_style="Subtitle1",
+            bold=True,
             theme_text_color="Custom",
-            text_color=(0.9, 0.9, 0.9, 1),
+            text_color=(0.85, 0.65, 0.13, 1),
             adaptive_height=True
         )
-        container.add_widget(lbl)
+
+        self.pm_target = MDTextField(
+            hint_text="Кому (Нікнейм отримувача)",
+            mode="round",
+            fill_color_normal=(0.08, 0.1, 0.15, 1)
+        )
+
+        self.pm_text = MDTextField(
+            hint_text="Текст приватного повідомлення...",
+            mode="round",
+            fill_color_normal=(0.08, 0.1, 0.15, 1)
+        )
+
+        btn = MDRaisedButton(
+            text="НАДІСЛАТИ ЛС",
+            md_bg_color=(0.85, 0.65, 0.13, 1),
+            text_color=(0, 0, 0, 1),
+            on_release=lambda x: self.send_pm_msg()
+        )
+
+        box.add_widget(lbl)
+        box.add_widget(self.pm_target)
+        box.add_widget(self.pm_text)
+        box.add_widget(btn)
+        container.add_widget(box)
+
+    def send_pm_msg(self):
+        target = self.pm_target.text.strip()
+        text = self.pm_text.text.strip()
+        if target and text:
+            try:
+                requests.post(f"{SERVER_URL}/send_pm", json={"sender": self.user_data['username'], "recipient": target, "text": text}, timeout=3)
+                self.pm_text.text = ""
+            except Exception:
+                pass
 
     def logout_act(self):
         self.manager.current = 'login'
