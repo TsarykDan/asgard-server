@@ -1,6 +1,9 @@
 import requests
 from datetime import datetime
+import os
 
+# Зменшуємо масштаб інтерфейсу (0.6 = 60% від звичайного розміру)
+os.environ['KIVY_METRICS_DENSITY'] = '0.6'
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.boxlayout import BoxLayout
