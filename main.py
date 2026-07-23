@@ -170,7 +170,7 @@ class MainGameScreen(ColoredScreen):
         self.main_layout = BoxLayout(orientation='vertical')
         
         # --- ВЕРХНЯ ПАНЕЛЬ (HEADER) ---
-        self.header = BoxLayout(orientation='horizontal', size_hint_y=None, height=45, padding=5, spacing=5)
+        self.header = BoxLayout(orientation='horizontal', size_hint_y=None, height=50, padding=5, spacing=8)
         
         self.info_label = Label(
             text="", 
@@ -186,23 +186,23 @@ class MainGameScreen(ColoredScreen):
         self.btn_panel = AsgardButton(
             text="Пульт", 
             size_hint=(None, 1),
-            width=65,
-            font_size="11sp",
+            width=70,
+            font_size="12sp",
             bg_color=COLOR_GOLD_BTN, 
             text_color=(0.05, 0.07, 0.12, 1),
-            radius=[5]
+            radius=[6]
         )
         self.btn_panel.bind(on_press=self.open_control_panel)
         
-        # 👑 КНОПКА 3 КРАПКИ (МЕНЮ)
+        # 👑 ЗБІЛЬШЕНА КНОПКА МЕНЮ
         self.btn_menu = AsgardButton(
-            text="⋮", 
+            text="МЕНЮ", 
             size_hint=(None, 1),
-            width=45,
-            font_size="22sp",
-            bg_color=COLOR_TAB_BG, 
-            text_color=COLOR_GOLD,
-            radius=[5]
+            width=90,
+            font_size="13sp",
+            bg_color=COLOR_GOLD_BTN, 
+            text_color=(0.05, 0.07, 0.12, 1),
+            radius=[6]
         )
         self.btn_menu.bind(on_press=self.open_menu_popup)
         
@@ -219,42 +219,42 @@ class MainGameScreen(ColoredScreen):
         
         Clock.schedule_interval(self.auto_refresh_data, 3)
 
-    # --- 📱 ГОЛОВНЕ ВІКНО МЕНЮ (3 КРАПКИ) ---
+    # --- 📱 ГОЛОВНЕ ВІКНО МЕНЮ ---
     def open_menu_popup(self, instance):
-        box = BoxLayout(orientation='vertical', padding=15, spacing=8)
+        box = BoxLayout(orientation='vertical', padding=15, spacing=10)
         
         box.add_widget(Label(
             text="=== МЕНЮ АЗГАРДУ ===", 
-            font_size="16sp", 
+            font_size="18sp", 
             color=COLOR_GOLD, 
             bold=True, 
             size_hint_y=None, 
-            height=30
+            height=35
         ))
         
         scroll = ScrollView()
-        grid = GridLayout(cols=1, size_hint_y=None, spacing=8)
+        grid = GridLayout(cols=1, size_hint_y=None, spacing=10)
         grid.bind(minimum_height=grid.setter('height'))
         
         tabs = [
-            ("💬 Загальний Чат", 'chat'), 
-            ("✉️ Приватні Повідомлення (ЛС)", 'pm'), 
-            ("💸 Перекази Коштів", 'transfer'), 
-            ("🎰 Казино (Колесо Фортуни)", 'casino'), 
-            ("🛍️ Державний Магазин", 'shop'), 
-            ("⚖️ Торговий Ринок", 'market'), 
-            ("👥 Реєстр Громадян", 'citizens'), 
-            ("📜 Кодекс Законів", 'rules')
+            ("Загальний Чат", 'chat'), 
+            ("Приватні Повідомлення (ЛС)", 'pm'), 
+            ("Перекази Коштів", 'transfer'), 
+            ("Казино (Колесо Фортуни)", 'casino'), 
+            ("Державний Магазин", 'shop'), 
+            ("Торговий Ринок", 'market'), 
+            ("Реєстр Громадян", 'citizens'), 
+            ("Кодекс Законів", 'rules')
         ]
         
-        popup = Popup(title="Навігація по королівству", content=box, size_hint=(0.85, 0.8))
+        popup = Popup(title="Навігація по королівству", content=box, size_hint=(0.9, 0.85))
         
         for title, key in tabs:
             btn = AsgardButton(
                 text=title, 
                 size_hint_y=None, 
-                height=42, 
-                font_size="13sp",
+                height=55,  # Збільшена висота кнопок
+                font_size="14sp",
                 bg_color=COLOR_TAB_BG, 
                 text_color=COLOR_TEXT_WHITE, 
                 radius=[8]
@@ -264,12 +264,11 @@ class MainGameScreen(ColoredScreen):
             btn.bind(on_press=make_select(key))
             grid.add_widget(btn)
             
-        # Додаткові опції Пошти та Виходу
         btn_email = AsgardButton(
-            text="📧 Прив'язати Gmail", 
+            text="Прив'язати Gmail", 
             size_hint_y=None, 
-            height=42, 
-            font_size="13sp",
+            height=55, 
+            font_size="14sp",
             bg_color=(0.1, 0.4, 0.6, 1), 
             text_color=COLOR_TEXT_WHITE, 
             radius=[8]
@@ -278,10 +277,10 @@ class MainGameScreen(ColoredScreen):
         grid.add_widget(btn_email)
         
         btn_logout = AsgardButton(
-            text="🚪 Вийти з акаунту", 
+            text="Вийти з акаунту", 
             size_hint_y=None, 
-            height=42, 
-            font_size="13sp",
+            height=55, 
+            font_size="14sp",
             bg_color=(0.6, 0.1, 0.1, 1), 
             text_color=COLOR_TEXT_WHITE, 
             radius=[8]
@@ -295,8 +294,8 @@ class MainGameScreen(ColoredScreen):
         btn_close = AsgardButton(
             text="Закрити", 
             size_hint_y=None, 
-            height=38, 
-            font_size="12sp",
+            height=45, 
+            font_size="13sp",
             bg_color=(0.2, 0.2, 0.2, 1), 
             text_color=COLOR_TEXT_WHITE, 
             radius=[8]
@@ -402,11 +401,11 @@ class MainGameScreen(ColoredScreen):
             bank_capital = 0.0
 
         user_id = self.user_data.get('user_id', '--')
-        mail_badge = " [✉️]" if self.user_data.get('email') else ""
+        mail_badge = " [Gmail]" if self.user_data.get('email') else ""
         
         self.info_label.text = (
-            f"👤 {username}{mail_badge} (ID: {user_id}) | 👑 {self.user_data['role']}\n"
-            f"🏦 Банк: {bank_capital:.0f} Ю | 💰 Баланс: {self.user_data['balance']:.0f} Ю"
+            f"Гравець: {username}{mail_badge} (ID: {user_id}) | Роль: {self.user_data['role']}\n"
+            f"Банк: {bank_capital:.0f} Ю | Баланс: {self.user_data['balance']:.0f} Ю"
         )
         
         role = self.user_data['role']
@@ -648,7 +647,7 @@ class MainGameScreen(ColoredScreen):
         layout.add_widget(self.tr_amount_input)
 
         btn_transfer = AsgardButton(
-            text="💸 ПЕРЕКАЗАТИ КОШТИ 💸",
+            text="ПЕРЕКАЗАТИ КОШТИ",
             size_hint_y=0.18, font_size="13sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1)
         )
         btn_transfer.bind(on_press=self.exec_transfer)
@@ -701,9 +700,9 @@ class MainGameScreen(ColoredScreen):
 
         info_text = (
             "[b][color=FFD700]СЕКТОРИ КОЛЕСА:[/color][/b]\n"
-            "🌟 [color=00FF66]2x (Подвоєння)[/color] — Шанс 10%\n"
-            "⚡ [color=99CCFF]x0.5 (Повернення 50%)[/color] — Шанс 20%\n"
-            "💀 [color=FF3333]4x БАНКРУТ (Втрата всієї ставки)[/color] — Шанс 70%"
+            "* [color=00FF66]2x (Подвоєння)[/color] — Шанс 10%\n"
+            "* [color=99CCFF]x0.5 (Повернення 50%)[/color] — Шанс 20%\n"
+            "* [color=FF3333]4x БАНКРУТ (Втрата всієї ставки)[/color] — Шанс 70%"
         )
         layout.add_widget(Label(text=info_text, markup=True, halign="center", font_size="12sp", size_hint_y=0.25))
 
@@ -715,7 +714,7 @@ class MainGameScreen(ColoredScreen):
         layout.add_widget(self.casino_bet_input)
 
         btn_spin = AsgardButton(
-            text="🎰 КРУТИТИ КОЛЕСО 🎰",
+            text="КРУТИТИ КОЛЕСО",
             size_hint_y=0.18, font_size="13sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1)
         )
         btn_spin.bind(on_press=self.spin_casino)
@@ -991,7 +990,7 @@ class MainGameScreen(ColoredScreen):
                 if p_tool: permits.append("Інструменти")
                 permits_text = ", ".join(permits) if permits else "Відсутні"
                 
-                email_text = f" | [color=88BBFF]✉️ {email}[/color]" if email else " | [color=666666]✉️ Без пошти[/color]"
+                email_text = f" | [color=88BBFF]Gmail: {email}[/color]" if email else " | [color=666666]Без пошти[/color]"
                 
                 card_text = (
                     f"[color=FFD700][ID: {u_id}] {username}[/color]{email_text} | Роль: {role} | Капітал: {bal:.0f} Ю\n"
