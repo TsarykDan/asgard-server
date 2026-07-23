@@ -169,37 +169,37 @@ class MainGameScreen(ColoredScreen):
         
         self.main_layout = BoxLayout(orientation='vertical')
         
-        # --- ВЕРХНЯ ПАНЕЛЬ (HEADER) ---
-        self.header = BoxLayout(orientation='horizontal', size_hint_y=None, height=50, padding=5, spacing=8)
+        # --- ВЕРХНЯ ПАНЕЛЬ (Збільшено висоту та додано безпечний відступ зверху) ---
+        self.header = BoxLayout(orientation='horizontal', size_hint_y=None, height=60, padding=[8, 12, 8, 4], spacing=6)
         
         self.info_label = Label(
             text="", 
             halign="left", 
-            valign="middle", 
+            valign="top", 
             color=COLOR_GOLD, 
             bold=True, 
-            font_size="11sp"
+            font_size="10sp"
         )
         self.info_label.bind(size=self.info_label.setter('text_size'))
         
-        # Кнопка "Пульт" (для Адміна/Короля)
+        # Кнопка "Пульт"
         self.btn_panel = AsgardButton(
             text="Пульт", 
             size_hint=(None, 1),
-            width=70,
-            font_size="12sp",
+            width=65,
+            font_size="11sp",
             bg_color=COLOR_GOLD_BTN, 
             text_color=(0.05, 0.07, 0.12, 1),
             radius=[6]
         )
         self.btn_panel.bind(on_press=self.open_control_panel)
         
-        # 👑 ЗБІЛЬШЕНА КНОПКА МЕНЮ
+        # Кнопка "МЕНЮ"
         self.btn_menu = AsgardButton(
             text="МЕНЮ", 
             size_hint=(None, 1),
-            width=90,
-            font_size="13sp",
+            width=80,
+            font_size="12sp",
             bg_color=COLOR_GOLD_BTN, 
             text_color=(0.05, 0.07, 0.12, 1),
             radius=[6]
@@ -253,7 +253,7 @@ class MainGameScreen(ColoredScreen):
             btn = AsgardButton(
                 text=title, 
                 size_hint_y=None, 
-                height=55,  # Збільшена висота кнопок
+                height=55, 
                 font_size="14sp",
                 bg_color=COLOR_TAB_BG, 
                 text_color=COLOR_TEXT_WHITE, 
@@ -404,7 +404,7 @@ class MainGameScreen(ColoredScreen):
         mail_badge = " [Gmail]" if self.user_data.get('email') else ""
         
         self.info_label.text = (
-            f"Гравець: {username}{mail_badge} (ID: {user_id}) | Роль: {self.user_data['role']}\n"
+            f"Нік: {username}{mail_badge} (ID: {user_id}) | {self.user_data['role']}\n"
             f"Банк: {bank_capital:.0f} Ю | Баланс: {self.user_data['balance']:.0f} Ю"
         )
         
@@ -530,7 +530,7 @@ class MainGameScreen(ColoredScreen):
                     
                 lbl = Label(
                     text=f"[color={color_code}][{timestamp}] {role_tag}{sender} (ID: {disp_id}):[/color] {text}", 
-                    size_hint_y=None, height=35, halign="left", valign="middle", markup=True, font_size="13sp"
+                    size_hint_y=None, height=35, halign="left", valign="top", markup=True, font_size="13sp"
                 )
                 lbl.bind(size=lbl.setter('text_size'))
                 self.chat_grid.add_widget(lbl)
@@ -616,7 +616,7 @@ class MainGameScreen(ColoredScreen):
                 
                 lbl = Label(
                     text=f"[color={color_tag}][{tm}] [{direction}]:[/color] {t}",
-                    size_hint_y=None, height=35, halign="left", valign="middle", markup=True, font_size="13sp"
+                    size_hint_y=None, height=35, halign="left", valign="top", markup=True, font_size="13sp"
                 )
                 lbl.bind(size=lbl.setter('text_size'))
                 self.pm_grid.add_widget(lbl)
@@ -888,11 +888,11 @@ class MainGameScreen(ColoredScreen):
             
             for item in items:
                 item_id, seller, item_name, price, desc = item["id"], item["seller"], item["item_name"], item["price"], item["description"]
-                row_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=75, spacing=10)
+                row_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=85, spacing=10)
                 desc_str = f"\n[size=12][color=bbbbbb]{desc}[/color][/size]" if desc else ""
                 item_lbl = Label(
                     text=f"[b]{item_name}[/b] - [color=FFD700]{price:.1f} Ю[/color]\n[size=12]Продавець: {seller}[/size]{desc_str}",
-                    markup=True, size_hint_x=0.65, halign="left", valign="middle"
+                    markup=True, size_hint_x=0.65, halign="left", valign="top"
                 )
                 item_lbl.bind(size=item_lbl.setter('text_size'))
                 row_layout.add_widget(item_lbl)
@@ -997,7 +997,7 @@ class MainGameScreen(ColoredScreen):
                     f"[color=FFB300]ВІП-Статус:[/color] {vip_text}\n"
                     f"[color=00FFCC]Дозволи:[/color] {permits_text}"
                 )
-                lbl = Label(text=card_text, markup=True, size_hint_y=None, height=80, halign="left", valign="middle", font_size="12sp")
+                lbl = Label(text=card_text, markup=True, size_hint_y=None, height=95, halign="left", valign="top", font_size="12sp")
                 lbl.bind(size=lbl.setter('text_size'))
                 grid.add_widget(lbl)
                 sep = Label(text="----------------------------------------------------------------", size_hint_y=None, height=10, color=(0.2, 0.3, 0.4, 1))
