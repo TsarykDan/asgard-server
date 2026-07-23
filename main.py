@@ -84,7 +84,7 @@ class LoginScreen(ColoredScreen):
         
         layout.add_widget(Label(
             text="*** КОРОЛІВСТВО ASGARD ***", 
-            font_size="24sp", 
+            font_size="22sp", 
             color=COLOR_GOLD, 
             bold=True,
             size_hint_y=0.22
@@ -169,92 +169,48 @@ class MainGameScreen(ColoredScreen):
         
         self.main_layout = BoxLayout(orientation='vertical')
         
-        # --- ВЕРХНЯ ПАНЕЛЬ СТАТУСУ ---
+        # --- ВЕРХНЯ ПАНЕЛЬ (HEADER) ---
         self.header = BoxLayout(orientation='horizontal', size_hint_y=None, height=45, padding=5, spacing=5)
-        self.info_label = Label(text="", halign="left", valign="middle", color=COLOR_GOLD, bold=True, font_size="12sp")
+        
+        self.info_label = Label(
+            text="", 
+            halign="left", 
+            valign="middle", 
+            color=COLOR_GOLD, 
+            bold=True, 
+            font_size="11sp"
+        )
         self.info_label.bind(size=self.info_label.setter('text_size'))
         
-        self.btn_email = AsgardButton(
-            text="✉️ Пошта", 
-            size_hint=(None, 1),
-            width=75,
-            font_size="12sp",
-            bg_color=(0.1, 0.4, 0.6, 1), 
-            text_color=COLOR_TEXT_WHITE,
-            radius=[5]
-        )
-        self.btn_email.bind(on_press=self.show_email_popup)
-
+        # Кнопка "Пульт" (для Адміна/Короля)
         self.btn_panel = AsgardButton(
             text="Пульт", 
             size_hint=(None, 1),
-            width=70,
-            font_size="12sp",
+            width=65,
+            font_size="11sp",
             bg_color=COLOR_GOLD_BTN, 
             text_color=(0.05, 0.07, 0.12, 1),
             radius=[5]
         )
         self.btn_panel.bind(on_press=self.open_control_panel)
         
-        self.btn_logout = AsgardButton(
-            text="Вихід", 
+        # 👑 КНОПКА 3 КРАПКИ (МЕНЮ)
+        self.btn_menu = AsgardButton(
+            text="⋮", 
             size_hint=(None, 1),
-            width=60,
-            font_size="12sp",
-            bg_color=(0.6, 0.1, 0.1, 1), 
-            text_color=COLOR_TEXT_WHITE,
+            width=45,
+            font_size="22sp",
+            bg_color=COLOR_TAB_BG, 
+            text_color=COLOR_GOLD,
             radius=[5]
         )
-        self.btn_logout.bind(on_press=self.show_logout_warning)
+        self.btn_menu.bind(on_press=self.open_menu_popup)
         
         self.header.add_widget(self.info_label)
-        self.header.add_widget(self.btn_email)
         self.header.add_widget(self.btn_panel)
-        self.header.add_widget(self.btn_logout)
+        self.header.add_widget(self.btn_menu)
+        
         self.main_layout.add_widget(self.header)
-        
-        # --- ПРОКРУЧУВАНЕ ВЕРХНЄ МЕНЮ (SCROLLVIEW) ---
-        self.tabs_scroll = ScrollView(
-            size_hint=(1, None), 
-            height=45, 
-            do_scroll_x=True, 
-            do_scroll_y=False
-        )
-        
-        self.tabs_nav = BoxLayout(
-            orientation='horizontal', 
-            size_hint_x=None, 
-            spacing=6, 
-            padding=[5, 2]
-        )
-        self.tabs_nav.bind(minimum_width=self.tabs_nav.setter('width'))
-        
-        tabs = [
-            ("Чат", 'chat'), 
-            ("ЛС", 'pm'), 
-            ("Перекази", 'transfer'), 
-            ("Казино", 'casino'), 
-            ("Магазин", 'shop'), 
-            ("Ринок", 'market'), 
-            ("Громадяни", 'citizens'), 
-            ("Закони", 'rules')
-        ]
-        
-        for title, key in tabs:
-            btn = AsgardButton(
-                text=title, 
-                size_hint=(None, 1), 
-                width=100, 
-                font_size="13sp",
-                bg_color=COLOR_TAB_BG, 
-                text_color=COLOR_TEXT_WHITE, 
-                radius=[5]
-            )
-            btn.bind(on_press=lambda instance, k=key: self.show_tab(k))
-            self.tabs_nav.add_widget(btn)
-            
-        self.tabs_scroll.add_widget(self.tabs_nav)
-        self.main_layout.add_widget(self.tabs_scroll)
         
         # --- ОСНОВНА ЗОНА КОНТЕНТУ ---
         self.content_area = BoxLayout(orientation='vertical', size_hint_y=1, padding=5)
@@ -262,6 +218,93 @@ class MainGameScreen(ColoredScreen):
         self.add_widget(self.main_layout)
         
         Clock.schedule_interval(self.auto_refresh_data, 3)
+
+    # --- 📱 ГОЛОВНЕ ВІКНО МЕНЮ (3 КРАПКИ) ---
+    def open_menu_popup(self, instance):
+        box = BoxLayout(orientation='vertical', padding=15, spacing=8)
+        
+        box.add_widget(Label(
+            text="=== МЕНЮ АЗГАРДУ ===", 
+            font_size="16sp", 
+            color=COLOR_GOLD, 
+            bold=True, 
+            size_hint_y=None, 
+            height=30
+        ))
+        
+        scroll = ScrollView()
+        grid = GridLayout(cols=1, size_hint_y=None, spacing=8)
+        grid.bind(minimum_height=grid.setter('height'))
+        
+        tabs = [
+            ("💬 Загальний Чат", 'chat'), 
+            ("✉️ Приватні Повідомлення (ЛС)", 'pm'), 
+            ("💸 Перекази Коштів", 'transfer'), 
+            ("🎰 Казино (Колесо Фортуни)", 'casino'), 
+            ("🛍️ Державний Магазин", 'shop'), 
+            ("⚖️ Торговий Ринок", 'market'), 
+            ("👥 Реєстр Громадян", 'citizens'), 
+            ("📜 Кодекс Законів", 'rules')
+        ]
+        
+        popup = Popup(title="Навігація по королівству", content=box, size_hint=(0.85, 0.8))
+        
+        for title, key in tabs:
+            btn = AsgardButton(
+                text=title, 
+                size_hint_y=None, 
+                height=42, 
+                font_size="13sp",
+                bg_color=COLOR_TAB_BG, 
+                text_color=COLOR_TEXT_WHITE, 
+                radius=[8]
+            )
+            def make_select(k):
+                return lambda x: (self.show_tab(k), popup.dismiss())
+            btn.bind(on_press=make_select(key))
+            grid.add_widget(btn)
+            
+        # Додаткові опції Пошти та Виходу
+        btn_email = AsgardButton(
+            text="📧 Прив'язати Gmail", 
+            size_hint_y=None, 
+            height=42, 
+            font_size="13sp",
+            bg_color=(0.1, 0.4, 0.6, 1), 
+            text_color=COLOR_TEXT_WHITE, 
+            radius=[8]
+        )
+        btn_email.bind(on_press=lambda x: (popup.dismiss(), self.show_email_popup(x)))
+        grid.add_widget(btn_email)
+        
+        btn_logout = AsgardButton(
+            text="🚪 Вийти з акаунту", 
+            size_hint_y=None, 
+            height=42, 
+            font_size="13sp",
+            bg_color=(0.6, 0.1, 0.1, 1), 
+            text_color=COLOR_TEXT_WHITE, 
+            radius=[8]
+        )
+        btn_logout.bind(on_press=lambda x: (popup.dismiss(), self.show_logout_warning(x)))
+        grid.add_widget(btn_logout)
+        
+        scroll.add_widget(grid)
+        box.add_widget(scroll)
+        
+        btn_close = AsgardButton(
+            text="Закрити", 
+            size_hint_y=None, 
+            height=38, 
+            font_size="12sp",
+            bg_color=(0.2, 0.2, 0.2, 1), 
+            text_color=COLOR_TEXT_WHITE, 
+            radius=[8]
+        )
+        btn_close.bind(on_press=popup.dismiss)
+        box.add_widget(btn_close)
+        
+        popup.open()
 
     # --- ПОПЕРЕДЖЕННЯ ПРИ ВИХОДІ ---
     def show_logout_warning(self, instance):
@@ -274,14 +317,14 @@ class MainGameScreen(ColoredScreen):
             "Ви дійсно хочете вийти з акаунту?\n"
             f"{email_status}\n\n"
             "[size=13]Якщо у вас немає прив'язаної пошти, ви можете [b]повністю втратити доступ[/b] "
-            "до цього акаунту і його вже неможливо буде повернути![/size]"
+            "до цього акаунту![/size]"
         )
         
         box.add_widget(Label(text=warning_text, markup=True, halign="center", valign="middle"))
         
         btn_box = BoxLayout(orientation='horizontal', spacing=10, size_hint_y=0.35)
         btn_cancel = AsgardButton(text="Скасувати", bg_color=(0.3, 0.3, 0.3, 1), text_color=COLOR_TEXT_WHITE)
-        btn_confirm = AsgardButton(text="Так, вийти з акаунту", bg_color=(0.8, 0.1, 0.1, 1), text_color=COLOR_TEXT_WHITE)
+        btn_confirm = AsgardButton(text="Так, вийти", bg_color=(0.8, 0.1, 0.1, 1), text_color=COLOR_TEXT_WHITE)
         
         btn_box.add_widget(btn_cancel)
         btn_box.add_widget(btn_confirm)
@@ -310,7 +353,7 @@ class MainGameScreen(ColoredScreen):
         ))
 
         email_input = TextInput(
-            hint_text="Введіть ваш Gmail (напр. example@gmail.com)...",
+            hint_text="Введіть ваш Gmail...",
             text=current_email,
             multiline=False,
             size_hint_y=0.2,
@@ -325,7 +368,7 @@ class MainGameScreen(ColoredScreen):
         res_lbl = Label(text="", size_hint_y=0.2, markup=True)
         box.add_widget(res_lbl)
 
-        popup = Popup(title="Налаштування сповіщень Gmail", content=box, size_hint=(0.85, 0.55))
+        popup = Popup(title="Налаштування Gmail", content=box, size_hint=(0.85, 0.55))
 
         def save_email_act(x):
             mail = email_input.text.strip()
@@ -362,8 +405,8 @@ class MainGameScreen(ColoredScreen):
         mail_badge = " [✉️]" if self.user_data.get('email') else ""
         
         self.info_label.text = (
-            f" [Гравець: {username}{mail_badge} (ID: {user_id})] | [Титул: {self.user_data['role']}]\n"
-            f" [Капітал Банку: {bank_capital:.2f}] | [Баланс: {self.user_data['balance']:.2f} Ю]"
+            f"👤 {username}{mail_badge} (ID: {user_id}) | 👑 {self.user_data['role']}\n"
+            f"🏦 Банк: {bank_capital:.0f} Ю | 💰 Баланс: {self.user_data['balance']:.0f} Ю"
         )
         
         role = self.user_data['role']
@@ -422,7 +465,7 @@ class MainGameScreen(ColoredScreen):
 
         self.order_board = Label(
             text="[АКТУАЛЬНИЙ НАКАЗ КОРОЛЯ]: Немає активних наказів на цей час.",
-            size_hint_y=0.1, color=COLOR_GOLD, bold=True, halign="center", valign="middle", markup=True, font_size="13sp"
+            size_hint_y=0.1, color=COLOR_GOLD, bold=True, halign="center", valign="middle", markup=True, font_size="12sp"
         )
         self.order_board.bind(size=self.order_board.setter('text_size'))
         chat_layout.add_widget(self.order_board)
@@ -436,17 +479,17 @@ class MainGameScreen(ColoredScreen):
         input_layout = BoxLayout(orientation='horizontal', size_hint_y=0.12, spacing=5)
         self.msg_input = TextInput(
             hint_text="Напишіть повідомлення...", multiline=False, 
-            font_size="14sp",
+            font_size="13sp",
             background_color=(0.1, 0.15, 0.25, 0.75), foreground_color=COLOR_TEXT_WHITE
         )
-        btn_send = AsgardButton(text="Надіслати", size_hint_x=0.3, font_size="13sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1))
+        btn_send = AsgardButton(text="Надіслати", size_hint_x=0.3, font_size="12sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1))
         btn_send.bind(on_press=self.send_message)
         input_layout.add_widget(self.msg_input)
         input_layout.add_widget(btn_send)
         chat_layout.add_widget(input_layout)
         
         btn_complaint = AsgardButton(
-            text="[УВАГА] Подати скаргу на порушника закону", size_hint_y=0.1, font_size="12sp",
+            text="[УВАГА] Подати скаргу на порушника закону", size_hint_y=0.1, font_size="11sp",
             bg_color=(0.5, 0.15, 0.15, 0.85), text_color=COLOR_TEXT_WHITE
         )
         btn_complaint.bind(on_press=self.show_complaint_popup)
@@ -518,7 +561,7 @@ class MainGameScreen(ColoredScreen):
 
         self.pm_target_input = TextInput(
             hint_text="Введіть нікнейм або ID отримувача...",
-            multiline=False, size_hint_y=0.1, font_size="14sp",
+            multiline=False, size_hint_y=0.1, font_size="13sp",
             background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE
         )
         layout.add_widget(self.pm_target_input)
@@ -531,10 +574,10 @@ class MainGameScreen(ColoredScreen):
 
         pm_input_layout = BoxLayout(orientation='horizontal', size_hint_y=0.15, spacing=5)
         self.pm_text_input = TextInput(
-            hint_text="Текст приватного повідомлення...", multiline=False, font_size="14sp",
+            hint_text="Текст приватного повідомлення...", multiline=False, font_size="13sp",
             background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE
         )
-        btn_send_pm = AsgardButton(text="Надіслати", size_hint_x=0.3, font_size="13sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1))
+        btn_send_pm = AsgardButton(text="Надіслати", size_hint_x=0.3, font_size="12sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1))
         btn_send_pm.bind(on_press=self.send_pm)
         pm_input_layout.add_widget(self.pm_text_input)
         pm_input_layout.add_widget(btn_send_pm)
@@ -587,33 +630,33 @@ class MainGameScreen(ColoredScreen):
 
         layout.add_widget(Label(
             text="=== КІБЕР-БАНКІНГ: ПЕРЕКАЗ ЮНІТІВ ===", 
-            font_size="18sp", color=COLOR_GOLD, bold=True, size_hint_y=0.12
+            font_size="16sp", color=COLOR_GOLD, bold=True, size_hint_y=0.12
         ))
 
         self.tr_target_input = TextInput(
             hint_text="Нікнейм або ID отримувача...",
-            multiline=False, size_hint_y=0.12, font_size="14sp",
+            multiline=False, size_hint_y=0.12, font_size="13sp",
             background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE
         )
         layout.add_widget(self.tr_target_input)
 
         self.tr_amount_input = TextInput(
             hint_text="Сума переказу (Ю)...",
-            multiline=False, size_hint_y=0.12, font_size="14sp",
+            multiline=False, size_hint_y=0.12, font_size="13sp",
             background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE
         )
         layout.add_widget(self.tr_amount_input)
 
         btn_transfer = AsgardButton(
             text="💸 ПЕРЕКАЗАТИ КОШТИ 💸",
-            size_hint_y=0.18, font_size="14sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1)
+            size_hint_y=0.18, font_size="13sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1)
         )
         btn_transfer.bind(on_press=self.exec_transfer)
         layout.add_widget(btn_transfer)
 
         self.tr_status_label = Label(
             text="Миттєвий переказ грошей підданим Азгарду.",
-            font_size="14sp", color=COLOR_TEXT_WHITE, bold=True, halign="center", size_hint_y=0.46
+            font_size="13sp", color=COLOR_TEXT_WHITE, bold=True, halign="center", size_hint_y=0.46
         )
         layout.add_widget(self.tr_status_label)
 
@@ -653,7 +696,7 @@ class MainGameScreen(ColoredScreen):
         
         layout.add_widget(Label(
             text="=== КАЗИНО АЗГАРДУ: КОЛЕСО ФОРТУНИ ===", 
-            font_size="18sp", color=COLOR_GOLD, bold=True, size_hint_y=0.1
+            font_size="16sp", color=COLOR_GOLD, bold=True, size_hint_y=0.1
         ))
 
         info_text = (
@@ -662,25 +705,25 @@ class MainGameScreen(ColoredScreen):
             "⚡ [color=99CCFF]x0.5 (Повернення 50%)[/color] — Шанс 20%\n"
             "💀 [color=FF3333]4x БАНКРУТ (Втрата всієї ставки)[/color] — Шанс 70%"
         )
-        layout.add_widget(Label(text=info_text, markup=True, halign="center", font_size="13sp", size_hint_y=0.25))
+        layout.add_widget(Label(text=info_text, markup=True, halign="center", font_size="12sp", size_hint_y=0.25))
 
         self.casino_bet_input = TextInput(
             hint_text="Введіть суму ставки (Ю)...",
-            multiline=False, size_hint_y=0.12, font_size="14sp",
+            multiline=False, size_hint_y=0.12, font_size="13sp",
             background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE
         )
         layout.add_widget(self.casino_bet_input)
 
         btn_spin = AsgardButton(
             text="🎰 КРУТИТИ КОЛЕСО 🎰",
-            size_hint_y=0.18, font_size="14sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1)
+            size_hint_y=0.18, font_size="13sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1)
         )
         btn_spin.bind(on_press=self.spin_casino)
         layout.add_widget(btn_spin)
 
         self.casino_result_label = Label(
             text="Зробіть ставку та випробуйте свою удачу!",
-            font_size="14sp", color=COLOR_TEXT_WHITE, bold=True, halign="center", size_hint_y=0.25
+            font_size="13sp", color=COLOR_TEXT_WHITE, bold=True, halign="center", size_hint_y=0.25
         )
         layout.add_widget(self.casino_result_label)
 
@@ -751,13 +794,13 @@ class MainGameScreen(ColoredScreen):
         grid = GridLayout(cols=1, size_hint_y=None, spacing=15, padding=12)
         grid.bind(minimum_height=grid.setter('height'))
         
-        grid.add_widget(Label(text="=== ДЕРЖАВНИЙ МАГАЗИН АЗГАРДУ ===", font_size="18sp", color=COLOR_GOLD, bold=True, size_hint_y=None, height=40))
-        grid.add_widget(Label(text="--- ВІП СТАТУСИ ---", font_size="15sp", color=COLOR_GOLD, bold=True, size_hint_y=None, height=30))
+        grid.add_widget(Label(text="=== ДЕРЖАВНИЙ МАГАЗИН АЗГАРДУ ===", font_size="16sp", color=COLOR_GOLD, bold=True, size_hint_y=None, height=40))
+        grid.add_widget(Label(text="--- ВІП СТАТУСИ ---", font_size="14sp", color=COLOR_GOLD, bold=True, size_hint_y=None, height=30))
         
         vips = [(1, "Віпка (Рівень 1)", 700, "+10% до зарплати"), (2, "Віпка 2 (Рівень 2)", 1000, "+20% до зарплати"), (3, "Віпка 3 (Рівень 3)", 2000, "2х зарплатні")]
         for level, label, price, desc in vips:
             row = BoxLayout(orientation='horizontal', size_hint_y=None, height=45, spacing=10)
-            row.add_widget(Label(text=f"[b]{label}[/b]\n[size=13]{desc}[/size]", markup=True, color=COLOR_TEXT_WHITE, size_hint_x=0.5, halign='left'))
+            row.add_widget(Label(text=f"[b]{label}[/b]\n[size=12]{desc}[/size]", markup=True, color=COLOR_TEXT_WHITE, size_hint_x=0.5, halign='left'))
             row.add_widget(Label(text=f"{price} Ю", color=COLOR_GOLD, size_hint_x=0.2, bold=True))
             btn = AsgardButton(text="Купити", font_size="12sp", bg_color=COLOR_GOLD_BTN, size_hint_x=0.3, radius=[5])
             btn.bind(on_press=lambda instance, lvl=level, pr=price, lbl=label: self.buy_vip(lvl, pr, lbl))
@@ -765,17 +808,17 @@ class MainGameScreen(ColoredScreen):
             grid.add_widget(row)
             
         vip4_row = BoxLayout(orientation='horizontal', size_hint_y=None, height=45, spacing=10)
-        vip4_row.add_widget(Label(text="[b]Віпка 4 (Рівень 4)[/b]\n[size=13]2х зарплатні[/size]", markup=True, color=(0.5, 0.7, 0.9, 1), size_hint_x=0.5, halign='left'))
+        vip4_row.add_widget(Label(text="[b]Віпка 4 (Рівень 4)[/b]\n[size=12]2х зарплатні[/size]", markup=True, color=(0.5, 0.7, 0.9, 1), size_hint_x=0.5, halign='left'))
         vip4_row.add_widget(Label(text="Безцінно", color=COLOR_RED, size_hint_x=0.2, bold=True))
-        vip4_btn = AsgardButton(text="За досягнення", font_size="11sp", bg_color=(0.2, 0.2, 0.2, 1), text_color=(0.5, 0.5, 0.5, 1), size_hint_x=0.3, radius=[5], disabled=True)
+        vip4_btn = AsgardButton(text="За досягнення", font_size="10sp", bg_color=(0.2, 0.2, 0.2, 1), text_color=(0.5, 0.5, 0.5, 1), size_hint_x=0.3, radius=[5], disabled=True)
         vip4_row.add_widget(vip4_btn)
         grid.add_widget(vip4_row)
         
-        grid.add_widget(Label(text="--- ДЕРЖАВНІ ДОЗВОЛИ ---", font_size="15sp", color=COLOR_GOLD, bold=True, size_hint_y=None, height=30))
+        grid.add_widget(Label(text="--- ДЕРЖАВНІ ДОЗВОЛИ ---", font_size="14sp", color=COLOR_GOLD, bold=True, size_hint_y=None, height=30))
         permits = [("sell", "Дозвіл на продаж", 500), ("territory", "Дозвіл на власність території", 300), ("food", "Дозвіл на продаваня їжі", 200), ("weapons", "Дозвіл на виробництво зброї", 250), ("tools", "Дозвіл на виробництво інструментів", 250)]
         for key, label, price in permits:
             row = BoxLayout(orientation='horizontal', size_hint_y=None, height=45, spacing=10)
-            row.add_widget(Label(text=label, font_size="12sp", color=COLOR_TEXT_WHITE, size_hint_x=0.5, halign='left'))
+            row.add_widget(Label(text=label, font_size="11sp", color=COLOR_TEXT_WHITE, size_hint_x=0.5, halign='left'))
             row.add_widget(Label(text=f"{price} Ю", color=COLOR_GOLD, size_hint_x=0.2, bold=True))
             btn = AsgardButton(text="Придбати", font_size="12sp", bg_color=COLOR_GOLD_BTN, size_hint_x=0.3, radius=[5])
             btn.bind(on_press=lambda instance, k=key, pr=price, lbl=label: self.buy_permit(k, pr, lbl))
@@ -820,8 +863,8 @@ class MainGameScreen(ColoredScreen):
     def build_market_tab(self):
         layout = BoxLayout(orientation='vertical', spacing=10)
         top_bar = BoxLayout(orientation='horizontal', size_hint_y=0.12, spacing=10)
-        top_bar.add_widget(Label(text="=== РИНОК АЗГАРДУ ===", font_size="16sp", color=COLOR_GOLD, bold=True, halign="left"))
-        btn_sell = AsgardButton(text="Виставити предмет", font_size="12sp", size_hint_x=0.4, bg_color=COLOR_GOLD_BTN, radius=[5])
+        top_bar.add_widget(Label(text="=== РИНОК АЗГАРДУ ===", font_size="15sp", color=COLOR_GOLD, bold=True, halign="left"))
+        btn_sell = AsgardButton(text="Виставити предмет", font_size="11sp", size_hint_x=0.4, bg_color=COLOR_GOLD_BTN, radius=[5])
         btn_sell.bind(on_press=self.show_sell_popup)
         top_bar.add_widget(btn_sell)
         layout.add_widget(top_bar)
@@ -849,20 +892,20 @@ class MainGameScreen(ColoredScreen):
                 row_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=75, spacing=10)
                 desc_str = f"\n[size=12][color=bbbbbb]{desc}[/color][/size]" if desc else ""
                 item_lbl = Label(
-                    text=f"[b]{item_name}[/b] - [color=FFD700]{price:.1f} Ю[/color]\n[size=13]Продавець: {seller}[/size]{desc_str}",
+                    text=f"[b]{item_name}[/b] - [color=FFD700]{price:.1f} Ю[/color]\n[size=12]Продавець: {seller}[/size]{desc_str}",
                     markup=True, size_hint_x=0.65, halign="left", valign="middle"
                 )
                 item_lbl.bind(size=item_lbl.setter('text_size'))
                 row_layout.add_widget(item_lbl)
                 
                 if seller == current_user:
-                    btn_action = AsgardButton(text="Забрати", font_size="12sp", bg_color=(0.5, 0.3, 0.1, 1), size_hint_x=0.35, radius=[5])
+                    btn_action = AsgardButton(text="Забрати", font_size="11sp", bg_color=(0.5, 0.3, 0.1, 1), size_hint_x=0.35, radius=[5])
                     btn_action.bind(on_press=lambda instance, i_id=item_id: self.cancel_market_item(i_id))
                 elif current_role == "Адмін":
-                    btn_action = AsgardButton(text="Видалити (Admin)", font_size="11sp", bg_color=COLOR_ADMIN_RED, text_color=COLOR_TEXT_WHITE, size_hint_x=0.35, radius=[5])
+                    btn_action = AsgardButton(text="Видалити (Admin)", font_size="10sp", bg_color=COLOR_ADMIN_RED, text_color=COLOR_TEXT_WHITE, size_hint_x=0.35, radius=[5])
                     btn_action.bind(on_press=lambda instance, i_id=item_id: self.cancel_market_item(i_id, is_admin_override=True))
                 else:
-                    btn_action = AsgardButton(text="Купити", font_size="12sp", bg_color=(0.1, 0.5, 0.3, 1), text_color=COLOR_TEXT_WHITE, size_hint_x=0.35, radius=[5])
+                    btn_action = AsgardButton(text="Купити", font_size="11sp", bg_color=(0.1, 0.5, 0.3, 1), text_color=COLOR_TEXT_WHITE, size_hint_x=0.35, radius=[5])
                     btn_action.bind(on_press=lambda instance, i_id=item_id, pr=price, sel=seller, item=item_name: self.buy_market_item(i_id, pr, sel, item))
                     
                 row_layout.add_widget(btn_action)
@@ -925,7 +968,7 @@ class MainGameScreen(ColoredScreen):
         scroll = ScrollView()
         grid = GridLayout(cols=1, size_hint_y=None, spacing=12, padding=12)
         grid.bind(minimum_height=grid.setter('height'))
-        grid.add_widget(Label(text="=== РЕЄСТР ЖИТЕЛІВ АЗГАРДУ ===", font_size="18sp", color=COLOR_GOLD, bold=True, size_hint_y=None, height=40))
+        grid.add_widget(Label(text="=== РЕЄСТР ЖИТЕЛІВ АЗГАРДУ ===", font_size="16sp", color=COLOR_GOLD, bold=True, size_hint_y=None, height=40))
         
         try:
             users = requests.get(f"{SERVER_URL}/citizens", timeout=3).json()
@@ -951,11 +994,11 @@ class MainGameScreen(ColoredScreen):
                 email_text = f" | [color=88BBFF]✉️ {email}[/color]" if email else " | [color=666666]✉️ Без пошти[/color]"
                 
                 card_text = (
-                    f"[color=FFD700][ID: {u_id}] {username}[/color]{email_text} | Роль: {role} | Капітал: {bal:.2f} Ю\n"
+                    f"[color=FFD700][ID: {u_id}] {username}[/color]{email_text} | Роль: {role} | Капітал: {bal:.0f} Ю\n"
                     f"[color=FFB300]ВІП-Статус:[/color] {vip_text}\n"
                     f"[color=00FFCC]Дозволи:[/color] {permits_text}"
                 )
-                lbl = Label(text=card_text, markup=True, size_hint_y=None, height=80, halign="left", valign="middle", font_size="13sp")
+                lbl = Label(text=card_text, markup=True, size_hint_y=None, height=80, halign="left", valign="middle", font_size="12sp")
                 lbl.bind(size=lbl.setter('text_size'))
                 grid.add_widget(lbl)
                 sep = Label(text="----------------------------------------------------------------", size_hint_y=None, height=10, color=(0.2, 0.3, 0.4, 1))
@@ -972,7 +1015,7 @@ class MainGameScreen(ColoredScreen):
         grid = GridLayout(cols=1, size_hint_y=None, spacing=12, padding=12)
         grid.bind(minimum_height=grid.setter('height'))
         
-        title = Label(text="=== КОДЕКС ЗАКОНІВ АЗГАРДУ ===", font_size="18sp", color=COLOR_GOLD, bold=True, size_hint_y=None, height=40)
+        title = Label(text="=== КОДЕКС ЗАКОНІВ АЗГАРДУ ===", font_size="16sp", color=COLOR_GOLD, bold=True, size_hint_y=None, height=40)
         grid.add_widget(title)
         
         rules_text = (
@@ -1003,10 +1046,10 @@ class MainGameScreen(ColoredScreen):
             "[b][color=FFD700]8.[/color][/b] Несплата податків за територію карається.\n[color=FF4D4D]  - Наслідок: Виправні роботи.[/color]\n\n"
             "[b][color=FFD700]17.[/color][/b] Незнання закону не ухиляє вас від відповідальності.\n\n"
             "[b][color=FFD700]18.[/color][/b] Зневага до Азгардської символіки карається.\n[color=FF4D4D]  - Наслідок: Штраф.[/color]\n\n"
-            "[size=13]Віче — народний радний заход, в якому верхівка не має більшого пріоритету.[/size]"
+            "[size=12]Віче — народний радний заход, в якому верхівка не має більшого пріоритету.[/size]"
         )
         
-        lbl_content = Label(text=rules_text, markup=True, font_size="13sp", size_hint_y=None, halign='left', valign='top', color=COLOR_TEXT_WHITE)
+        lbl_content = Label(text=rules_text, markup=True, font_size="12sp", size_hint_y=None, halign='left', valign='top', color=COLOR_TEXT_WHITE)
         lbl_content.bind(texture_size=lbl_content.setter('size'))
         lbl_content.bind(width=lambda im, val: setattr(lbl_content, 'text_size', (val, None)))
         
@@ -1023,18 +1066,18 @@ class MainGameScreen(ColoredScreen):
         title_text = "*** ПУЛЬТ АБСОЛЮТНОГО АДМІНІСТРУВАННЯ АЗГАРДОМ ***" if is_admin else "*** ПУЛЬТ ВЕРХОВНОГО КЕРУВАННЯ АЗГАРДОМ ***"
         title_color = COLOR_RED if is_admin else COLOR_GOLD
         
-        popup_layout.add_widget(Label(text=title_text, font_size="15sp", color=title_color, bold=True, size_hint_y=None, height=35))
+        popup_layout.add_widget(Label(text=title_text, font_size="14sp", color=title_color, bold=True, size_hint_y=None, height=35))
         
         scroll = ScrollView(size_hint_y=0.9)
         content_grid = GridLayout(cols=1, size_hint_y=None, spacing=10, padding=5)
         content_grid.bind(minimum_height=content_grid.setter('height'))
         
         if is_admin:
-            content_grid.add_widget(Label(text="--- СУПЕР СИЛА БОГІВ АЗГАРДУ ---", font_size="13sp", size_hint_y=None, height=25, color=COLOR_RED, bold=True))
+            content_grid.add_widget(Label(text="--- СУПЕР СИЛА БОГІВ АЗГАРДУ ---", font_size="12sp", size_hint_y=None, height=25, color=COLOR_RED, bold=True))
             role_mgmt = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
             self.role_target_input = TextInput(hint_text="Нік або ID...", multiline=False, background_color=(0.15, 0.05, 0.05, 1), foreground_color=COLOR_TEXT_WHITE)
-            btn_make_king = AsgardButton(text="Зробити Королем", font_size="11sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1), radius=[5])
-            btn_demote = AsgardButton(text="Зробити Громадянином", font_size="11sp", bg_color=(0.4, 0.4, 0.4, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
+            btn_make_king = AsgardButton(text="Зробити Королем", font_size="10sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1), radius=[5])
+            btn_demote = AsgardButton(text="Зробити Громадянином", font_size="10sp", bg_color=(0.4, 0.4, 0.4, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
             btn_make_king.bind(on_press=lambda x: self.send_admin_act({"action": "set_role", "role": "Король", "target": self.role_target_input.text}))
             btn_demote.bind(on_press=lambda x: self.send_admin_act({"action": "set_role", "role": "Громадянин", "target": self.role_target_input.text}))
             role_mgmt.add_widget(self.role_target_input)
@@ -1044,14 +1087,14 @@ class MainGameScreen(ColoredScreen):
             
             delete_mgmt = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
             self.delete_target_input = TextInput(hint_text="ID чи нік...", multiline=False, background_color=(0.15, 0.05, 0.05, 1), foreground_color=COLOR_TEXT_WHITE)
-            btn_delete_acc = AsgardButton(text="ВИДАЛИТИ АКАУНТ", font_size="11sp", bg_color=(0.9, 0.1, 0.1, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
+            btn_delete_acc = AsgardButton(text="ВИДАЛИТИ АКАУНТ", font_size="10sp", bg_color=(0.9, 0.1, 0.1, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
             btn_delete_acc.bind(on_press=lambda x: self.send_admin_act({"action": "delete", "target": self.delete_target_input.text, "admin_user": self.user_data['username']}))
             delete_mgmt.add_widget(self.delete_target_input)
             delete_mgmt.add_widget(btn_delete_acc)
             content_grid.add_widget(delete_mgmt)
             content_grid.add_widget(Label(text="----------------------------------------------------------------", size_hint_y=None, height=10, color=COLOR_RED))
 
-        content_grid.add_widget(Label(text="Державні скарги громадян:", font_size="13sp", size_hint_y=None, height=25, color=COLOR_RED, bold=True))
+        content_grid.add_widget(Label(text="Державні скарги громадян:", font_size="12sp", size_hint_y=None, height=25, color=COLOR_RED, bold=True))
         self.complaints_box = BoxLayout(orientation='vertical', size_hint_y=None, height=120)
         self.complaints_scroll = ScrollView()
         self.complaints_grid = GridLayout(cols=1, size_hint_y=None, spacing=5)
@@ -1060,11 +1103,11 @@ class MainGameScreen(ColoredScreen):
         self.complaints_box.add_widget(self.complaints_scroll)
         content_grid.add_widget(self.complaints_box)
         
-        content_grid.add_widget(Label(text="Дисциплінарний Комітет (Бан/Розбан):", font_size="13sp", size_hint_y=None, height=25, color=COLOR_GOLD, bold=True))
+        content_grid.add_widget(Label(text="Дисциплінарний Комітет (Бан/Розбан):", font_size="12sp", size_hint_y=None, height=25, color=COLOR_GOLD, bold=True))
         ban_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
         self.ban_input = TextInput(hint_text="Нік або ID...", multiline=False, background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE)
-        btn_ban = AsgardButton(text="Забанити", font_size="11sp", bg_color=(0.7, 0.1, 0.1, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
-        btn_unban = AsgardButton(text="Розбанити", font_size="11sp", bg_color=(0.1, 0.5, 0.1, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
+        btn_ban = AsgardButton(text="Забанити", font_size="10sp", bg_color=(0.7, 0.1, 0.1, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
+        btn_unban = AsgardButton(text="Розбанити", font_size="10sp", bg_color=(0.1, 0.5, 0.1, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
         btn_ban.bind(on_press=lambda x: self.send_admin_act({"action": "ban", "target": self.ban_input.text, "admin_user": self.user_data['username']}))
         btn_unban.bind(on_press=lambda x: self.send_admin_act({"action": "unban", "target": self.ban_input.text}))
         ban_layout.add_widget(self.ban_input)
@@ -1072,13 +1115,13 @@ class MainGameScreen(ColoredScreen):
         ban_layout.add_widget(btn_unban)
         content_grid.add_widget(ban_layout)
         
-        content_grid.add_widget(Label(text="Державна Казначея (Юніти):", font_size="13sp", size_hint_y=None, height=25, color=COLOR_GOLD, bold=True))
+        content_grid.add_widget(Label(text="Державна Казначея (Юніти):", font_size="12sp", size_hint_y=None, height=25, color=COLOR_GOLD, bold=True))
         bank_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
         self.bank_target = TextInput(hint_text="Нік або ID...", multiline=False, background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE)
         self.bank_amount = TextInput(hint_text="Сума...", multiline=False, background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE)
-        btn_give = AsgardButton(text="+ Дати", font_size="11sp", bg_color=(0.1, 0.5, 0.3, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
-        btn_take = AsgardButton(text="- Забрати", font_size="11sp", bg_color=(0.5, 0.3, 0.1, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
-        btn_set = AsgardButton(text="= Встановити", font_size="10sp", bg_color=(0.2, 0.4, 0.6, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
+        btn_give = AsgardButton(text="+ Дати", font_size="10sp", bg_color=(0.1, 0.5, 0.3, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
+        btn_take = AsgardButton(text="- Забрати", font_size="10sp", bg_color=(0.5, 0.3, 0.1, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
+        btn_set = AsgardButton(text="= Встановити", font_size="9sp", bg_color=(0.2, 0.4, 0.6, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
         btn_give.bind(on_press=lambda x: self.send_admin_act({"action": "units", "mode": "add", "target": self.bank_target.text, "amount": self.bank_amount.text}))
         btn_take.bind(on_press=lambda x: self.send_admin_act({"action": "units", "mode": "sub", "target": self.bank_target.text, "amount": self.bank_amount.text}))
         btn_set.bind(on_press=lambda x: self.send_admin_act({"action": "units", "mode": "set", "target": self.bank_target.text, "amount": self.bank_amount.text}))
@@ -1089,23 +1132,23 @@ class MainGameScreen(ColoredScreen):
         bank_layout.add_widget(btn_set)
         content_grid.add_widget(bank_layout)
 
-        content_grid.add_widget(Label(text="Надання ВІП-Рангів (0-4):", font_size="13sp", size_hint_y=None, height=25, color=COLOR_GOLD, bold=True))
+        content_grid.add_widget(Label(text="Надання ВІП-Рангів (0-4):", font_size="12sp", size_hint_y=None, height=25, color=COLOR_GOLD, bold=True))
         vip_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
         self.vp_target = TextInput(hint_text="Нік або ID...", multiline=False, background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE)
         self.vp_vip_level = TextInput(hint_text="Рівень (0-4)...", multiline=False, background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE)
-        btn_set_vip = AsgardButton(text="Встановити ВІП", font_size="11sp", bg_color=(0.1, 0.5, 0.7, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
+        btn_set_vip = AsgardButton(text="Встановити ВІП", font_size="10sp", bg_color=(0.1, 0.5, 0.7, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
         btn_set_vip.bind(on_press=lambda x: self.send_admin_act({"action": "vip", "target": self.vp_target.text, "vip_level": self.vp_vip_level.text}))
         vip_layout.add_widget(self.vp_target)
         vip_layout.add_widget(self.vp_vip_level)
         vip_layout.add_widget(btn_set_vip)
         content_grid.add_widget(vip_layout)
 
-        content_grid.add_widget(Label(text="Керування Дозволами (продаж / тер / їжа / зброя / інстр):", font_size="12sp", size_hint_y=None, height=25, color=COLOR_GOLD, bold=True))
+        content_grid.add_widget(Label(text="Керування Дозволами (продаж / тер / їжа / зброя / інстр):", font_size="11sp", size_hint_y=None, height=25, color=COLOR_GOLD, bold=True))
         permit_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
         self.perm_target = TextInput(hint_text="Нік або ID...", multiline=False, background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE)
         self.perm_type = TextInput(hint_text="Тип...", multiline=False, background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE)
-        btn_give_perm = AsgardButton(text="Дати дозвіл", font_size="11sp", bg_color=(0.1, 0.6, 0.3, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
-        btn_revoke_perm = AsgardButton(text="Забрати", font_size="11sp", bg_color=(0.7, 0.2, 0.2, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
+        btn_give_perm = AsgardButton(text="Дати дозвіл", font_size="10sp", bg_color=(0.1, 0.6, 0.3, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
+        btn_revoke_perm = AsgardButton(text="Забрати", font_size="10sp", bg_color=(0.7, 0.2, 0.2, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
         btn_give_perm.bind(on_press=lambda x: self.handle_permit_act(1))
         btn_revoke_perm.bind(on_press=lambda x: self.handle_permit_act(0))
         permit_layout.add_widget(self.perm_target)
@@ -1114,21 +1157,21 @@ class MainGameScreen(ColoredScreen):
         permit_layout.add_widget(btn_revoke_perm)
         content_grid.add_widget(permit_layout)
         
-        content_grid.add_widget(Label(text="Капітал Банку:", font_size="13sp", size_hint_y=None, height=25, color=COLOR_GOLD, bold=True))
+        content_grid.add_widget(Label(text="Капітал Банку:", font_size="12sp", size_hint_y=None, height=25, color=COLOR_GOLD, bold=True))
         capital_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
         self.capital_input = TextInput(hint_text="Сума...", multiline=False, background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE)
-        btn_set_capital = AsgardButton(text="Встановити Капітал", font_size="11sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1), radius=[5])
+        btn_set_capital = AsgardButton(text="Встановити Капітал", font_size="10sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1), radius=[5])
         btn_set_capital.bind(on_press=lambda x: self.send_admin_act({"action": "capital", "capital": self.capital_input.text}))
         capital_layout.add_widget(self.capital_input)
         capital_layout.add_widget(btn_set_capital)
         content_grid.add_widget(capital_layout)
         
-        content_grid.add_widget(Label(text="Оголошення Наказів / Завдань:", font_size="13sp", size_hint_y=None, height=25, color=COLOR_GOLD, bold=True))
+        content_grid.add_widget(Label(text="Оголошення Наказів / Завдань:", font_size="12sp", size_hint_y=None, height=25, color=COLOR_GOLD, bold=True))
         order_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
         self.order_target = TextInput(hint_text="Нік, ID або Усім...", multiline=False, background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE)
         self.order_text = TextInput(hint_text="Текст...", background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE)
-        btn_cmd = AsgardButton(text="Наказ", font_size="11sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1), radius=[5])
-        btn_task = AsgardButton(text="Завдання", font_size="11sp", bg_color=(0.2, 0.5, 0.7, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
+        btn_cmd = AsgardButton(text="Наказ", font_size="10sp", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1), radius=[5])
+        btn_task = AsgardButton(text="Завдання", font_size="10sp", bg_color=(0.2, 0.5, 0.7, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
         btn_cmd.bind(on_press=lambda x: self.send_admin_act({"action": "royal_order", "order_type": "Наказ", "target": self.order_target.text, "text": self.order_text.text, "role": self.user_data['role']}))
         btn_task.bind(on_press=lambda x: self.send_admin_act({"action": "royal_order", "order_type": "Завдання", "target": self.order_target.text, "text": self.order_text.text, "role": self.user_data['role']}))
         order_layout.add_widget(self.order_target)
@@ -1137,15 +1180,15 @@ class MainGameScreen(ColoredScreen):
         order_layout.add_widget(btn_task)
         content_grid.add_widget(order_layout)
         
-        content_grid.add_widget(Label(text="Збори та Державний Порядок:", font_size="13sp", size_hint_y=None, height=25, color=COLOR_GOLD, bold=True))
-        btn_tax = AsgardButton(text="Зібрати податок з усіх (По 50 Ю)", size_hint_y=None, height=40, font_size="12sp", bg_color=(0.5, 0.4, 0.1, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
+        content_grid.add_widget(Label(text="Збори та Державний Порядок:", font_size="12sp", size_hint_y=None, height=25, color=COLOR_GOLD, bold=True))
+        btn_tax = AsgardButton(text="Зібрати податок з усіх (По 50 Ю)", size_hint_y=None, height=40, font_size="11sp", bg_color=(0.5, 0.4, 0.1, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
         btn_tax.bind(on_press=lambda x: self.send_admin_act({"action": "taxes"}))
         content_grid.add_widget(btn_tax)
         
         scroll.add_widget(content_grid)
         popup_layout.add_widget(scroll)
         
-        btn_close = AsgardButton(text="Закрити пульт керування", size_hint_y=None, height=40, font_size="12sp", bg_color=(0.2, 0.2, 0.2, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
+        btn_close = AsgardButton(text="Закрити пульт керування", size_hint_y=None, height=40, font_size="11sp", bg_color=(0.2, 0.2, 0.2, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
         popup_layout.add_widget(btn_close)
         
         king_popup = Popup(title="Панель Керування Азгардом", content=popup_layout, size_hint=(0.98, 0.98))
@@ -1187,7 +1230,7 @@ class MainGameScreen(ColoredScreen):
             items = requests.get(f"{SERVER_URL}/complaints", timeout=3).json()
             self.complaints_grid.clear_widgets()
             for c in items:
-                lbl = Label(text=f"[color=FFD700]Скарга #{c['id']}:[/color] від {c['reporter']} на {c['target']}\n -> Суть: {c['reason']}", size_hint_y=None, height=45, halign="left", markup=True, font_size="12sp")
+                lbl = Label(text=f"[color=FFD700]Скарга #{c['id']}:[/color] від {c['reporter']} на {c['target']}\n -> Суть: {c['reason']}", size_hint_y=None, height=45, halign="left", markup=True, font_size="11sp")
                 lbl.bind(size=lbl.setter('text_size'))
                 self.complaints_grid.add_widget(lbl)
         except Exception:
