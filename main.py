@@ -1,34 +1,30 @@
-import requests
-from datetime import datetime
-import os
-
-# Зменшуємо масштаб інтерфейсу (0.6 = 60% від звичайного розміру)
-os.environ['KIVY_METRICS_DENSITY'] = '0.6'
-from kivy.app import App
-from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.relativelayout import RelativeLayout
-from kivy.uix.image import Image
-from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
-from kivy.uix.button import Button
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.popup import Popup
-from kivy.clock import Clock
-from kivy.graphics import Color, Rectangle, RoundedRectangle
-
 import os
 import sys
+import requests
+
+from kivy.app import App
+from kivy.clock import Clock
+from kivy.graphics import Color, Rectangle, RoundedRectangle
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.button import Button
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.image import Image
+from kivy.uix.label import Label
+from kivy.uix.popup import Popup
+from kivy.uix.relativelayout import RelativeLayout
+from kivy.uix.screenmanager import Screen, ScreenManager
+from kivy.uix.scrollview import ScrollView
+from kivy.uix.textinput import TextInput
 
 
 def resource_path(relative_path):
-  """Отримує абсолютний шлях до ресурсів (працює і в коді, і в зібраному .exe)"""
-  try:
-    base_path = sys._MEIPASS
-  except Exception:
-    base_path = os.path.abspath(".")
-  return os.path.join(base_path, relative_path)
+    """Отримує абсолютний шлях до ресурсів (працює і в коді, і в зібраному .exe)"""
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
 
 SERVER_URL = "https://asgard-server-xu8n.onrender.com"
 
@@ -63,7 +59,7 @@ class AsgardButton(Button):
 
     def on_state(self, instance, state):
         if state == 'down':
-            self.paint_color.rgba = (self.bg_color[0]*0.7, self.bg_color[1]*0.7, self.bg_color[2]*0.7, 1)
+            self.paint_color.rgba = (self.bg_color[0] * 0.7, self.bg_color[1] * 0.7, self.bg_color[2] * 0.7, 1)
         else:
             self.paint_color.rgba = self.bg_color
 
@@ -236,7 +232,7 @@ class MainGameScreen(ColoredScreen):
         
         Clock.schedule_interval(self.auto_refresh_data, 3)
 
-    # --- ЗАХИСНЕ ВІКНО ПОПЕРЕДЖЕННЯ ПРИ ВИХОДІ ---
+    # --- ПОПЕРЕДЖЕННЯ ПРИ ВИХОДІ ---
     def show_logout_warning(self, instance):
         box = BoxLayout(orientation='vertical', padding=15, spacing=15)
         
@@ -270,7 +266,7 @@ class MainGameScreen(ColoredScreen):
         btn_confirm.bind(on_press=confirm_exit)
         popup.open()
 
-    # --- ВІКНО ПРИВ'ЯЗКИ EMAIL ---
+    # --- ПРИВ'ЯЗКА EMAIL ---
     def show_email_popup(self, instance):
         box = BoxLayout(orientation='vertical', padding=15, spacing=12)
         
@@ -292,7 +288,7 @@ class MainGameScreen(ColoredScreen):
         )
         box.add_widget(email_input)
 
-        btn_save = AsgardButton(text="Зберегти пошту", bg_color=COLOR_GOLD_BTN, text_color=(0,0,0,1), size_hint_y=0.25)
+        btn_save = AsgardButton(text="Зберегти пошту", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1), size_hint_y=0.25)
         box.add_widget(btn_save)
 
         res_lbl = Label(text="", size_hint_y=0.2, markup=True)
@@ -378,7 +374,7 @@ class MainGameScreen(ColoredScreen):
         elif tab_name == 'rules': 
             self.build_rules_tab()
 
-    # --- ВКЛАДКА: ЧАТ (З НАПІВПРОЗОРИМ ФОНОМ) ---
+    # --- ВКЛАДКА: ЧАТ ---
     def build_chat_tab(self):
         rel_container = RelativeLayout()
 
@@ -415,7 +411,7 @@ class MainGameScreen(ColoredScreen):
             hint_text="Напишіть повідомлення в бесіду...", multiline=False, 
             background_color=(0.1, 0.15, 0.25, 0.75), foreground_color=COLOR_TEXT_WHITE
         )
-        btn_send = AsgardButton(text="Надіслати", size_hint_x=0.25, bg_color=COLOR_GOLD_BTN, text_color=(0,0,0,1))
+        btn_send = AsgardButton(text="Надіслати", size_hint_x=0.25, bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1))
         btn_send.bind(on_press=self.send_message)
         input_layout.add_widget(self.msg_input)
         input_layout.add_widget(btn_send)
@@ -466,15 +462,18 @@ class MainGameScreen(ColoredScreen):
 
     def send_message(self, instance):
         text = self.msg_input.text.strip()
-        if not text: return
+        if not text:
+            return
         try:
             requests.post(f"{SERVER_URL}/send_message", json={"sender": self.user_data['username'], "text": text}, timeout=3)
             self.msg_input.text = ""
             self.load_chat()
-        except Exception: pass
+        except Exception:
+            pass
 
     def load_chat(self):
-        if not hasattr(self, 'chat_grid'): return
+        if not hasattr(self, 'chat_grid'):
+            return
         try:
             messages = requests.get(f"{SERVER_URL}/messages", timeout=3).json()
             self.chat_grid.clear_widgets()
@@ -495,17 +494,20 @@ class MainGameScreen(ColoredScreen):
                 )
                 lbl.bind(size=lbl.setter('text_size'))
                 self.chat_grid.add_widget(lbl)
-        except Exception: pass
+        except Exception:
+            pass
 
     def load_king_order(self):
-        if not hasattr(self, 'order_board'): return
+        if not hasattr(self, 'order_board'):
+            return
         try:
             res = requests.get(f"{SERVER_URL}/king_order", timeout=3).json()
             if res.get("type"):
                 self.order_board.text = f"[color=FFD700][КОРОЛІВСЬКИЙ {res['type'].upper()} ДЛЯ {res['target'].upper()}]:[/color] {res['text']}"
             else:
                 self.order_board.text = "[БЕЗПЕКА]: Немає активних указів верхівки."
-        except Exception: pass
+        except Exception:
+            pass
 
     # --- ВКЛАДКА: ПРИВАТНІ ПОВІДОМЛЕННЯ (ЛС) ---
     def build_pm_tab(self):
@@ -534,7 +536,7 @@ class MainGameScreen(ColoredScreen):
             hint_text="Текст приватного повідомлення...", multiline=False,
             background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE
         )
-        btn_send_pm = AsgardButton(text="Надіслати ЛС", size_hint_x=0.3, bg_color=COLOR_GOLD_BTN, text_color=(0,0,0,1))
+        btn_send_pm = AsgardButton(text="Надіслати ЛС", size_hint_x=0.3, bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1))
         btn_send_pm.bind(on_press=self.send_pm)
         pm_input_layout.add_widget(self.pm_text_input)
         pm_input_layout.add_widget(btn_send_pm)
@@ -546,7 +548,8 @@ class MainGameScreen(ColoredScreen):
     def send_pm(self, instance):
         target = self.pm_target_input.text.strip()
         text = self.pm_text_input.text.strip()
-        if not target or not text: return
+        if not target or not text:
+            return
 
         try:
             res = requests.post(f"{SERVER_URL}/send_pm", json={"sender": self.user_data['username'], "target": target, "text": text}, timeout=3).json()
@@ -555,10 +558,12 @@ class MainGameScreen(ColoredScreen):
                 self.load_pms()
             else:
                 self.show_popup_msg("ЛС Помилка", res.get("message", "Отримувача не знайдено!"))
-        except Exception: pass
+        except Exception:
+            pass
 
     def load_pms(self):
-        if not hasattr(self, 'pm_grid'): return
+        if not hasattr(self, 'pm_grid'):
+            return
         try:
             username = self.user_data['username']
             pms = requests.get(f"{SERVER_URL}/pms/{username}", timeout=3).json()
@@ -575,7 +580,8 @@ class MainGameScreen(ColoredScreen):
                 )
                 lbl.bind(size=lbl.setter('text_size'))
                 self.pm_grid.add_widget(lbl)
-        except Exception: pass
+        except Exception:
+            pass
 
     # --- ВКЛАДКА: P2P ПЕРЕКАЗИ ---
     def build_transfer_tab(self):
@@ -602,7 +608,7 @@ class MainGameScreen(ColoredScreen):
 
         btn_transfer = AsgardButton(
             text="💸 ПЕРЕКАЗАТИ КОШТИ 💸",
-            size_hint_y=0.18, bg_color=COLOR_GOLD_BTN, text_color=(0,0,0,1)
+            size_hint_y=0.18, bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1)
         )
         btn_transfer.bind(on_press=self.exec_transfer)
         layout.add_widget(btn_transfer)
@@ -643,7 +649,7 @@ class MainGameScreen(ColoredScreen):
             self.tr_status_label.text = "[color=FF3333]Сервер недоступний![/color]"
             self.tr_status_label.markup = True
 
-    # --- ВКЛАДКА: КАЗИНО (КОЛЕСО ФОРТУНИ) ---
+    # --- ВКЛАДКА: КАЗИНО ---
     def build_casino_tab(self):
         layout = BoxLayout(orientation='vertical', padding=15, spacing=15)
         
@@ -669,7 +675,7 @@ class MainGameScreen(ColoredScreen):
 
         btn_spin = AsgardButton(
             text="🎰 КРУТИТИ КОЛЕСО 🎰",
-            size_hint_y=0.18, bg_color=COLOR_GOLD_BTN, text_color=(0,0,0,1)
+            size_hint_y=0.18, bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1)
         )
         btn_spin.bind(on_press=self.spin_casino)
         layout.add_widget(btn_spin)
@@ -722,7 +728,7 @@ class MainGameScreen(ColoredScreen):
         box = BoxLayout(orientation='vertical', padding=12, spacing=10)
         self.target_input = TextInput(hint_text="Нікнейм або ID порушника", multiline=False, background_color=(0.08, 0.12, 0.2, 1), foreground_color=COLOR_TEXT_WHITE)
         self.reason_input = TextInput(hint_text="Яке саме правило з кодексу порушено?", background_color=(0.08, 0.12, 0.2, 1), foreground_color=COLOR_TEXT_WHITE)
-        btn_submit = AsgardButton(text="ВІДПРАВИТИ СУДДІ", bg_color=COLOR_GOLD_BTN, text_color=(0,0,0,1))
+        btn_submit = AsgardButton(text="ВІДПРАВИТИ СУДДІ", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1))
         box.add_widget(self.target_input)
         box.add_widget(self.reason_input)
         box.add_widget(btn_submit)
@@ -737,7 +743,8 @@ class MainGameScreen(ColoredScreen):
         if raw_target and reason:
             try:
                 requests.post(f"{SERVER_URL}/submit_complaint", json={"reporter": self.user_data['username'], "target": raw_target, "reason": reason}, timeout=3)
-            except Exception: pass
+            except Exception:
+                pass
         popup.dismiss()
 
     # --- ВКЛАДКА: ДЕРЖАВНИЙ МАГАЗИН ---
@@ -788,7 +795,8 @@ class MainGameScreen(ColoredScreen):
                 self.show_popup_msg("Успішно", f"Вітаємо! Ви придбали {label}!")
             else:
                 self.show_popup_msg("Магазин", res.get("message", "Помилка"))
-        except Exception: pass
+        except Exception:
+            pass
 
     def buy_permit(self, key, price, label):
         try:
@@ -798,7 +806,8 @@ class MainGameScreen(ColoredScreen):
                 self.show_popup_msg("Успішно", f"Придбано державний {label}!")
             else:
                 self.show_popup_msg("Магазин", res.get("message", "Помилка"))
-        except Exception: pass
+        except Exception:
+            pass
 
     def show_popup_msg(self, title, message):
         box = BoxLayout(orientation='vertical', padding=15, spacing=15)
@@ -829,7 +838,8 @@ class MainGameScreen(ColoredScreen):
         self.load_market_items()
 
     def load_market_items(self):
-        if not hasattr(self, 'market_grid'): return
+        if not hasattr(self, 'market_grid'):
+            return
         try:
             items = requests.get(f"{SERVER_URL}/market_items", timeout=3).json()
             self.market_grid.clear_widgets()
@@ -861,14 +871,15 @@ class MainGameScreen(ColoredScreen):
                 self.market_grid.add_widget(row_layout)
                 sep = Label(text="----------------------------------------------------------------", size_hint_y=None, height=5, color=(0.15, 0.22, 0.33, 1))
                 self.market_grid.add_widget(sep)
-        except Exception: pass
+        except Exception:
+            pass
 
     def show_sell_popup(self, instance):
         box = BoxLayout(orientation='vertical', padding=12, spacing=10)
         self.market_item_input = TextInput(hint_text="Назва предмету...", multiline=False, background_color=(0.08, 0.12, 0.2, 1), foreground_color=COLOR_TEXT_WHITE)
         self.market_price_input = TextInput(hint_text="Ціна (Юніти)...", multiline=False, background_color=(0.08, 0.12, 0.2, 1), foreground_color=COLOR_TEXT_WHITE)
         self.market_desc_input = TextInput(hint_text="Опис предмета (необов'язково)...", background_color=(0.08, 0.12, 0.2, 1), foreground_color=COLOR_TEXT_WHITE)
-        btn_add = AsgardButton(text="ВИСТАВИТИ НА РИНОК", bg_color=COLOR_GOLD_BTN, text_color=(0,0,0,1))
+        btn_add = AsgardButton(text="ВИСТАВИТИ НА РИНОК", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1))
         box.add_widget(self.market_item_input)
         box.add_widget(self.market_price_input)
         box.add_widget(self.market_desc_input)
@@ -888,14 +899,16 @@ class MainGameScreen(ColoredScreen):
                 if price > 0:
                     requests.post(f"{SERVER_URL}/submit_market", json={"seller": self.user_data['username'], "item_name": item, "price": price, "description": desc}, timeout=3)
                     self.load_market_items()
-            except ValueError: pass
+            except ValueError:
+                pass
         popup.dismiss()
 
     def cancel_market_item(self, item_id, is_admin_override=False):
         try:
             requests.post(f"{SERVER_URL}/cancel_market", json={"item_id": item_id, "seller": self.user_data['username'], "is_admin": is_admin_override}, timeout=3)
             self.load_market_items()
-        except Exception: pass
+        except Exception:
+            pass
 
     def buy_market_item(self, item_id, price, seller, item_name):
         try:
@@ -906,7 +919,8 @@ class MainGameScreen(ColoredScreen):
                 self.show_popup_msg("Ринкова угода", f"Ви успішно придбали {item_name}!")
             else:
                 self.show_popup_msg("Помилка купівлі", res.get("message", "Помилка"))
-        except Exception: pass
+        except Exception:
+            pass
 
     # --- ВКЛАДКА: ГРОМАДЯНИ ---
     def build_citizens_tab(self):
@@ -948,7 +962,8 @@ class MainGameScreen(ColoredScreen):
                 grid.add_widget(lbl)
                 sep = Label(text="----------------------------------------------------------------", size_hint_y=None, height=10, color=(0.2, 0.3, 0.4, 1))
                 grid.add_widget(sep)
-        except Exception: pass
+        except Exception:
+            pass
         
         scroll.add_widget(grid)
         self.content_area.add_widget(scroll)
@@ -990,7 +1005,7 @@ class MainGameScreen(ColoredScreen):
             "[b][color=FFD700]8.[/color][/b] Несплата податків за територію карається.\n[color=FF4D4D]  - Наслідок: Виправні роботи.[/color]\n\n"
             "[b][color=FFD700]17.[/color][/b] Незнання закону не ухиляє вас від відповідальності.\n\n"
             "[b][color=FFD700]18.[/color][/b] Зневага до Азгардської символіки карається.\n[color=FF4D4D]  - Наслідок: Штраф.[/color]\n\n"
-            "[size=14]Віче — народний радний захід, в якому верхівка не має більшого пріоритету.[/size]"
+            "[size=14]Віче — народний радний заход, в якому верхівка не має більшого пріоритету.[/size]"
         )
         
         lbl_content = Label(text=rules_text, markup=True, size_hint_y=None, halign='left', valign='top', color=COLOR_TEXT_WHITE)
@@ -1020,7 +1035,7 @@ class MainGameScreen(ColoredScreen):
             content_grid.add_widget(Label(text="--- СУПЕР СИЛА БОГІВ АЗГАРДУ ---", size_hint_y=None, height=25, color=COLOR_RED, bold=True))
             role_mgmt = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
             self.role_target_input = TextInput(hint_text="Нік або ID...", multiline=False, background_color=(0.15, 0.05, 0.05, 1), foreground_color=COLOR_TEXT_WHITE)
-            btn_make_king = AsgardButton(text="Зробити Королем", bg_color=COLOR_GOLD_BTN, text_color=(0,0,0,1), radius=[5])
+            btn_make_king = AsgardButton(text="Зробити Королем", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1), radius=[5])
             btn_demote = AsgardButton(text="Зробити Громадянином", bg_color=(0.4, 0.4, 0.4, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
             btn_make_king.bind(on_press=lambda x: self.send_admin_act({"action": "set_role", "role": "Король", "target": self.role_target_input.text}))
             btn_demote.bind(on_press=lambda x: self.send_admin_act({"action": "set_role", "role": "Громадянин", "target": self.role_target_input.text}))
@@ -1104,7 +1119,7 @@ class MainGameScreen(ColoredScreen):
         content_grid.add_widget(Label(text="Капітал Банку:", size_hint_y=None, height=25, color=COLOR_GOLD, bold=True))
         capital_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
         self.capital_input = TextInput(hint_text="Сума...", multiline=False, background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE)
-        btn_set_capital = AsgardButton(text="Встановити Капітал", bg_color=COLOR_GOLD_BTN, text_color=(0,0,0,1), radius=[5])
+        btn_set_capital = AsgardButton(text="Встановити Капітал", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1), radius=[5])
         btn_set_capital.bind(on_press=lambda x: self.send_admin_act({"action": "capital", "capital": self.capital_input.text}))
         capital_layout.add_widget(self.capital_input)
         capital_layout.add_widget(btn_set_capital)
@@ -1114,7 +1129,7 @@ class MainGameScreen(ColoredScreen):
         order_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=5)
         self.order_target = TextInput(hint_text="Нік, ID або Усім...", multiline=False, background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE)
         self.order_text = TextInput(hint_text="Текст...", background_color=(0.1, 0.15, 0.25, 1), foreground_color=COLOR_TEXT_WHITE)
-        btn_cmd = AsgardButton(text="Наказ", bg_color=COLOR_GOLD_BTN, text_color=(0,0,0,1), radius=[5])
+        btn_cmd = AsgardButton(text="Наказ", bg_color=COLOR_GOLD_BTN, text_color=(0, 0, 0, 1), radius=[5])
         btn_task = AsgardButton(text="Завдання", bg_color=(0.2, 0.5, 0.7, 1), text_color=COLOR_TEXT_WHITE, radius=[5])
         btn_cmd.bind(on_press=lambda x: self.send_admin_act({"action": "royal_order", "order_type": "Наказ", "target": self.order_target.text, "text": self.order_text.text, "role": self.user_data['role']}))
         btn_task.bind(on_press=lambda x: self.send_admin_act({"action": "royal_order", "order_type": "Завдання", "target": self.order_target.text, "text": self.order_text.text, "role": self.user_data['role']}))
@@ -1147,22 +1162,29 @@ class MainGameScreen(ColoredScreen):
             self.update_header()
             self.load_complaints()
             self.load_king_order()
-        except Exception: pass
+        except Exception:
+            pass
 
     def handle_permit_act(self, val):
         term = self.perm_type.text.strip().lower()
         col = None
-        if term in ["продаж", "sell", "продажi"]: col = "permit_sell"
-        elif term in ["територія", "тер", "territory", "територiя"]: col = "permit_territory"
-        elif term in ["їжа", "food", "їжi"]: col = "permit_food"
-        elif term in ["зброя", "weapon", "weapons", "зброї"]: col = "permit_weapons"
-        elif term in ["інструменти", "інстр", "tools", "інструментів", "iнструменти"]: col = "permit_tools"
+        if term in ["продаж", "sell", "продажi"]: 
+            col = "permit_sell"
+        elif term in ["територія", "тер", "territory", "територiя"]: 
+            col = "permit_territory"
+        elif term in ["їжа", "food", "їжi"]: 
+            col = "permit_food"
+        elif term in ["зброя", "weapon", "weapons", "зброї"]: 
+            col = "permit_weapons"
+        elif term in ["інструменти", "інстр", "tools", "інструментів", "iнструменти"]: 
+            col = "permit_tools"
         
         if col:
             self.send_admin_act({"action": "permit", "target": self.perm_target.text, "column": col, "val": val})
 
     def load_complaints(self):
-        if not hasattr(self, 'complaints_grid'): return
+        if not hasattr(self, 'complaints_grid'):
+            return
         try:
             items = requests.get(f"{SERVER_URL}/complaints", timeout=3).json()
             self.complaints_grid.clear_widgets()
@@ -1170,7 +1192,8 @@ class MainGameScreen(ColoredScreen):
                 lbl = Label(text=f"[color=FFD700]Скарга #{c['id']}:[/color] від {c['reporter']} на {c['target']}\n -> Суть: {c['reason']}", size_hint_y=None, height=45, halign="left", markup=True)
                 lbl.bind(size=lbl.setter('text_size'))
                 self.complaints_grid.add_widget(lbl)
-        except Exception: pass
+        except Exception:
+            pass
 
 
 class AsgardApp(App):
@@ -1180,6 +1203,7 @@ class AsgardApp(App):
         sm.add_widget(LoginScreen(name='login'))
         sm.add_widget(MainGameScreen(name='main_game'))
         return sm
+
 
 if __name__ == '__main__':
     AsgardApp().run()
