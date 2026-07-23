@@ -12,6 +12,7 @@ from kivymd.uix.button import MDFillRoundFlatIconButton, MDIconButton, MDRaisedB
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.textfield import MDTextField
+from kivymd.uix.label import MDLabel
 
 def resource_path(relative_path):
     try:
@@ -47,7 +48,7 @@ MDScreenManager:
         adaptive_height: True
 
         MDLabel:
-            text: "♔ АЗГАРД ♔"
+            text: "АЗГАРД"
             font_style: "H4"
             bold: True
             halign: "center"
@@ -90,13 +91,13 @@ MDScreenManager:
     MDBoxLayout:
         orientation: 'vertical'
 
-        # --- ВЕРХНЯ ПАНЕЛЬ (HEADER / ПРОФІЛЬ В СТИЛІ РЕФЕРЕНСУ) ---
+        # --- ВЕРХНЯ ПАНЕЛЬ (HEADER) ---
         MDCard:
             orientation: 'vertical'
             size_hint_y: None
-            height: "275dp"
+            adaptive_height: True
             padding: ["12dp", "8dp", "12dp", "12dp"]
-            spacing: "6dp"
+            spacing: "4dp"
             md_bg_color: 0.08, 0.1, 0.16, 1
             radius: [0, 0, 16, 16]
 
@@ -118,13 +119,7 @@ MDScreenManager:
                     opacity: 0
                     disabled: True
                     on_release: root.open_control_panel()
-                MDIconButton:
-                    icon: "book-open-outline"
-                    theme_text_color: "Custom"
-                    text_color: 0.6, 0.6, 0.6, 1
-                    on_release: root.show_tab('rules')
 
-            # Назва
             MDLabel:
                 text: "К О РО Л І В С Т В О"
                 font_style: "Caption"
@@ -134,7 +129,7 @@ MDScreenManager:
                 adaptive_height: True
 
             MDLabel:
-                text: "♔  АЗГАРД  ♔"
+                text: "АЗГАРД"
                 font_style: "H6"
                 bold: True
                 halign: "center"
@@ -158,23 +153,23 @@ MDScreenManager:
 
                 MDLabel:
                     id: user_balance_lbl
-                    text: "◆ 0 UNIT"
+                    text: "0 UNIT"
                     font_style: "Subtitle2"
                     bold: True
                     theme_text_color: "Custom"
                     text_color: 0.9, 0.75, 0.2, 1
                     adaptive_size: True
 
-            # VIP ТЕГ
+            # VIP / ТЕГ РОЛІ
             MDCard:
                 size_hint: None, None
-                size: "90dp", "22dp"
+                size: "120dp", "24dp"
                 pos_hint: {'center_x': 0.5}
                 md_bg_color: 0.85, 0.68, 0.13, 1
                 radius: [6]
                 MDLabel:
                     id: vip_tag_lbl
-                    text: "VIP STATUS ★"
+                    text: "ГРОМАДЯНИН"
                     font_style: "Caption"
                     bold: True
                     halign: "center"
@@ -183,7 +178,7 @@ MDScreenManager:
 
             MDLabel:
                 id: bank_lbl
-                text: "🏛 БАНК АЗГАРДУ: 0 UNIT"
+                text: "БАНК АЗГАРДУ: 0 UNIT"
                 font_style: "Caption"
                 halign: "center"
                 theme_text_color: "Custom"
@@ -195,7 +190,7 @@ MDScreenManager:
                 cols: 3
                 spacing: "5dp"
                 adaptive_height: True
-                padding: [0, "4dp", 0, 0]
+                padding: [0, "6dp", 0, 0]
 
                 GoldButton:
                     text: "МАГАЗИН"
@@ -235,7 +230,7 @@ MDScreenManager:
                     icon: "email"
                     on_release: root.show_email_dialog()
 
-        # --- ДИНАМІЧНА ЗОНА (ЧАТ / МАГАЗИН / РИНОК ТОЩО) ---
+        # --- ДИНАМІЧНА ЗОНА ---
         ScrollView:
             id: content_scroll
             MDBoxLayout:
@@ -245,7 +240,7 @@ MDScreenManager:
                 spacing: "8dp"
                 adaptive_height: True
 
-        # --- НИЖНЯ ПАНЕЛЬ (ВВЕДЕННЯ ТЕКСТУ ТА СКАРГА) ---
+        # --- НИЖНЯ ПАНЕЛЬ ---
         MDBoxLayout:
             orientation: 'vertical'
             size_hint_y: None
@@ -254,7 +249,7 @@ MDScreenManager:
             spacing: "6dp"
 
             MDRaisedButton:
-                text: "📜 СКАРГА НА КОРОЛЯ / ПОРУШНИКА"
+                text: "СКАРГА НА КОРОЛЯ / ПОРУШНИКА"
                 size_hint_x: 1
                 md_bg_color: 0.15, 0.1, 0.1, 1
                 line_color: 0.6, 0.2, 0.2, 1
@@ -338,8 +333,8 @@ class MainGameScreen(MDScreen):
 
         u_id = self.user_data.get('user_id', '--')
         self.ids.user_status_lbl.text = f"● {username} #{u_id}"
-        self.ids.user_balance_lbl.text = f"◆ {self.user_data['balance']:.0f} UNIT"
-        self.ids.bank_lbl.text = f"🏛 БАНК АЗГАРДУ: {bank_capital:.0f} UNIT"
+        self.ids.user_balance_lbl.text = f"{self.user_data['balance']:.0f} UNIT"
+        self.ids.bank_lbl.text = f"БАНК АЗГАРДУ: {bank_capital:.0f} UNIT"
         self.ids.vip_tag_lbl.text = f"{self.user_data['role'].upper()}"
 
         role = self.user_data['role']
@@ -365,13 +360,20 @@ class MainGameScreen(MDScreen):
             self.load_chat()
         elif tab_name == 'citizens':
             self.load_citizens()
+        elif tab_name == 'shop':
+            self.load_shop()
+        elif tab_name == 'market':
+            self.load_market()
+        elif tab_name == 'transfer':
+            self.load_transfer_ui()
+        elif tab_name == 'casino':
+            self.load_casino_ui()
+        elif tab_name == 'pm':
+            self.load_pm_ui()
 
     def load_chat(self):
-        if self.active_tab != 'chat':
-            return
         container = self.ids.dynamic_content
         container.clear_widgets()
-        
         try:
             messages = requests.get(f"{SERVER_URL}/messages", timeout=3).json()
             for msg in messages:
@@ -383,10 +385,9 @@ class MainGameScreen(MDScreen):
                     md_bg_color=(0.08, 0.1, 0.15, 1),
                     radius=[8]
                 )
-                
                 header = MDBoxLayout(adaptive_height=True)
                 sender_lbl = MDLabel(
-                    text=f"👑 {msg['sender']} [#{msg.get('sender_id', '--')}]",
+                    text=f"{msg['sender']} [#{msg.get('sender_id', '--')}]",
                     font_style="Caption",
                     bold=True,
                     theme_text_color="Custom",
@@ -411,7 +412,6 @@ class MainGameScreen(MDScreen):
                     text_color=(0.95, 0.95, 0.95, 1),
                     adaptive_height=True
                 )
-
                 card.add_widget(header)
                 card.add_widget(text_lbl)
                 container.add_widget(card)
@@ -425,7 +425,8 @@ class MainGameScreen(MDScreen):
         try:
             requests.post(f"{SERVER_URL}/send_message", json={"sender": self.user_data['username'], "text": text}, timeout=3)
             self.ids.msg_input.text = ""
-            self.load_chat()
+            if self.active_tab == 'chat':
+                self.load_chat()
         except Exception:
             pass
 
@@ -444,7 +445,7 @@ class MainGameScreen(MDScreen):
                     radius=[8]
                 )
                 info = MDLabel(
-                    text=f"👤 {u['username']} (ID: {u['user_id']})\nРоль: {u['role']} | Баланс: {u['balance']} UNIT",
+                    text=f"ГРАВЕЦЬ: {u['username']} (ID: {u['user_id']})\nРоль: {u['role']} | Баланс: {u['balance']} UNIT",
                     font_style="Body2",
                     theme_text_color="Custom",
                     text_color=(0.9, 0.9, 0.9, 1),
@@ -454,6 +455,82 @@ class MainGameScreen(MDScreen):
                 container.add_widget(card)
         except Exception:
             pass
+
+    def load_shop(self):
+        container = self.ids.dynamic_content
+        container.clear_widgets()
+        lbl = MDLabel(
+            text="🛒 КОРОЛІВСЬКИЙ МАГАЗИН\n\n1. VIP-Статус — 500 UNIT\n2. Охорона землі — 200 UNIT\n3. Зниження податків — 1000 UNIT",
+            theme_text_color="Custom",
+            text_color=(0.9, 0.9, 0.9, 1),
+            adaptive_height=True
+        )
+        container.add_widget(lbl)
+
+    def load_market(self):
+        container = self.ids.dynamic_content
+        container.clear_widgets()
+        lbl = MDLabel(
+            text="⚖ РИНОК РЕСУРСІВ АЗГАРДУ\n\nНаразі торги закриті Королем або відсутні лоти.",
+            theme_text_color="Custom",
+            text_color=(0.9, 0.9, 0.9, 1),
+            adaptive_height=True
+        )
+        container.add_widget(lbl)
+
+    def load_transfer_ui(self):
+        container = self.ids.dynamic_content
+        container.clear_widgets()
+        
+        box = MDBoxLayout(orientation='vertical', spacing="10dp", adaptive_height=True)
+        target = MDTextField(hint_text="Кому (Нікнейм)")
+        amount = MDTextField(hint_text="Сума UNIT", input_filter="int")
+        btn = MDRaisedButton(
+            text="ПЕРЕКАЗАТИ",
+            md_bg_color=(0.85, 0.65, 0.13, 1),
+            text_color=(0,0,0,1),
+            on_release=lambda x: self.exec_transfer(target.text, amount.text)
+        )
+        box.add_widget(target)
+        box.add_widget(amount)
+        box.add_widget(btn)
+        container.add_widget(box)
+
+    def exec_transfer(self, target, amount):
+        if target and amount:
+            try:
+                res = requests.post(f"{SERVER_URL}/transfer", json={"sender": self.user_data['username'], "recipient": target, "amount": float(amount)}, timeout=3).json()
+                self.update_header()
+            except Exception:
+                pass
+
+    def load_casino_ui(self):
+        container = self.ids.dynamic_content
+        container.clear_widgets()
+        lbl = MDLabel(
+            text="🎰 КАЗИНО АЗГАРДУ\n\nЗробіть ставку та випробуйте удачу!",
+            theme_text_color="Custom",
+            text_color=(0.9, 0.9, 0.9, 1),
+            adaptive_height=True
+        )
+        btn = MDRaisedButton(
+            text="КРУТИТИ (50 UNIT)",
+            md_bg_color=(0.85, 0.65, 0.13, 1),
+            text_color=(0,0,0,1)
+        )
+        container.add_widget(lbl)
+        container.add_widget(btn)
+
+    def load_pm_ui(self):
+        container = self.ids.dynamic_content
+        container.clear_widgets()
+        lbl = MDLabel(
+            text="💬 ПРИВАТНІ ПОВІДОМЛЕННЯ\n\nВиберіть гравця зі списку 'ГРАВЦІ' для початку листування.",
+            theme_text_color="Custom",
+            text_color=(0.9, 0.9, 0.9, 1),
+            adaptive_height=True
+        )
+        container.add_widget(lbl)
 
     def logout_act(self):
         self.manager.current = 'login'
