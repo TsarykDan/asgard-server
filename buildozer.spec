@@ -22,6 +22,8 @@ version = 1.0
 # Додай сюди бібліотеки, якщо використовуєш KivyMD або інші (наприклад: python3,kivy,kivymd)
 requirements = python3,kivy
 
+orientation = portrait
+
 # (str) Custom source code for Android main entry point
 # Якщо твоє головне ім'я файлу ASGARD_MOBILE.py:
 # (або перейменуй файл у репозиторії на main.py)
