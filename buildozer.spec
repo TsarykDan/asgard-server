@@ -20,7 +20,7 @@ version = 1.0
 
 # (list) Application requirements
 # Додай сюди бібліотеки, якщо використовуєш KivyMD або інші (наприклад: python3,kivy,kivymd)
-requirements = python3,kivy,kivymd,requests,urllib3,chardet,idna,certifi
+requirements = python3,kivy,kivymd,requests,urllib3,chardet,idna,certifi,pillow
 
 
 orientation = portrait
@@ -30,8 +30,7 @@ orientation = portrait
 # (або перейменуй файл у репозиторії на main.py)
 
 # (list) Permissions
-android.permissions = INTERNET
-
+android.permissions = INTERNET, READ_EXTERNAL_STORAGE
 # (int) Target Android API, should be as high as possible.
 android.api = 33
 
