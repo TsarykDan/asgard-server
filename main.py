@@ -203,7 +203,7 @@ MDScreenManager:
                 GoldButton:
                     text: "НАКАЗИ"
                     icon: "scroll-text"
-                    on_release: root.show_tab('chat')
+                    on_release: root.show_tab('orders')
                 GoldButton:
                     text: "ПЕРЕКАЗИ"
                     icon: "bank-transfer"
@@ -346,6 +346,8 @@ class MainGameScreen(MDScreen):
             self.update_header()
             if self.active_tab == 'chat':
                 self.load_chat()
+            elif self.active_tab == 'pm':
+                self.load_pm_ui()
 
     def show_tab(self, tab_name):
         self.active_tab = tab_name
@@ -360,6 +362,8 @@ class MainGameScreen(MDScreen):
             self.load_shop()
         elif tab_name == 'market':
             self.load_market()
+        elif tab_name == 'orders':
+            self.load_orders()
         elif tab_name == 'transfer':
             self.load_transfer_ui()
         elif tab_name == 'casino':
@@ -452,7 +456,17 @@ class MainGameScreen(MDScreen):
         except Exception:
             pass
 
-    # --- ІНТЕРАКТИВНИЙ МАГАЗИН ---
+    def load_orders(self):
+        container = self.ids.dynamic_content
+        container.clear_widgets()
+        lbl = MDLabel(
+            text="📜 КОРОЛІВСЬКІ НАКАЗИ ТА УКАЗИ\n\n1. Дотримуйтесь порядку в чаті.\n2. Сплачуйте податки до Банку Азгарду.\n3. Поважайте Короля та адміністрацію.",
+            theme_text_color="Custom",
+            text_color=(0.9, 0.9, 0.9, 1),
+            adaptive_height=True
+        )
+        container.add_widget(lbl)
+
     def load_shop(self):
         container = self.ids.dynamic_content
         container.clear_widgets()
@@ -521,8 +535,8 @@ class MainGameScreen(MDScreen):
         container.clear_widgets()
         
         box = MDBoxLayout(orientation='vertical', spacing="10dp", adaptive_height=True)
-        target = MDTextField(hint_text="Кому (Нікнейм)")
-        amount = MDTextField(hint_text="Сума UNIT", input_filter="int")
+        target = MDTextField(hint_text="Кому (Нікнейм)", mode="round", fill_color_normal=(0.08, 0.1, 0.15, 1))
+        amount = MDTextField(hint_text="Сума UNIT", input_filter="int", mode="round", fill_color_normal=(0.08, 0.1, 0.15, 1))
         btn = MDRaisedButton(
             text="ПЕРЕКАЗАТИ",
             md_bg_color=(0.85, 0.65, 0.13, 1),
@@ -542,7 +556,6 @@ class MainGameScreen(MDScreen):
             except Exception:
                 pass
 
-    # --- ІНТЕРАКТИВНЕ КАЗИНО (ВВЕДЕННЯ СТАВКИ) ---
     def load_casino_ui(self):
         container = self.ids.dynamic_content
         container.clear_widgets()
@@ -606,7 +619,6 @@ class MainGameScreen(MDScreen):
         except Exception:
             self.casino_res_lbl.text = "Помилка зв'язку з сервером!"
 
-    # --- ІНТЕРАКТИВНІ ПРИВАТНІ ПОВІДОМЛЕННЯ (ЛС) ---
     def load_pm_ui(self):
         container = self.ids.dynamic_content
         container.clear_widgets()
@@ -647,6 +659,30 @@ class MainGameScreen(MDScreen):
         box.add_widget(btn)
         container.add_widget(box)
 
+        # Відображення вхідних/вихідних повідомлень
+        try:
+            res = requests.get(f"{SERVER_URL}/get_pms/{self.user_data['username']}", timeout=3).json()
+            for pm in res:
+                card = MDBoxLayout(
+                    orientation='vertical',
+                    adaptive_height=True,
+                    padding="8dp",
+                    spacing="2dp",
+                    md_bg_color=(0.1, 0.12, 0.18, 1),
+                    radius=[6]
+                )
+                pm_lbl = MDLabel(
+                    text=f"Від: {pm['sender']} -> Для: {pm['recipient']}\n{pm['text']}",
+                    font_style="Body2",
+                    theme_text_color="Custom",
+                    text_color=(0.9, 0.9, 0.9, 1),
+                    adaptive_height=True
+                )
+                card.add_widget(pm_lbl)
+                container.add_widget(card)
+        except Exception:
+            pass
+
     def send_pm_msg(self):
         target = self.pm_target.text.strip()
         text = self.pm_text.text.strip()
@@ -654,6 +690,7 @@ class MainGameScreen(MDScreen):
             try:
                 requests.post(f"{SERVER_URL}/send_pm", json={"sender": self.user_data['username'], "recipient": target, "text": text}, timeout=3)
                 self.pm_text.text = ""
+                self.load_pm_ui()
             except Exception:
                 pass
 
@@ -661,7 +698,7 @@ class MainGameScreen(MDScreen):
         self.manager.current = 'login'
 
     def show_email_dialog(self):
-        field = MDTextField(hint_text="Введіть Gmail...")
+        field = MDTextField(hint_text="Введіть Gmail...", mode="round")
         self.dialog = MDDialog(
             title="Прив'язка Пошти",
             type="custom",
@@ -684,8 +721,8 @@ class MainGameScreen(MDScreen):
 
     def show_complaint_dialog(self):
         box = MDBoxLayout(orientation="vertical", spacing="10dp", adaptive_height=True)
-        target = MDTextField(hint_text="Нікнейм порушника")
-        reason = MDTextField(hint_text="Причина скарги")
+        target = MDTextField(hint_text="Нікнейм порушника", mode="round")
+        reason = MDTextField(hint_text="Причина скарги", mode="round")
         box.add_widget(target)
         box.add_widget(reason)
 
@@ -708,8 +745,51 @@ class MainGameScreen(MDScreen):
         if self.dialog:
             self.dialog.dismiss()
 
+    # --- ПАНЕЛЬ УПРАВЛІННЯ ДЛЯ КОРОЛЯ ТА АДМІНА ---
     def open_control_panel(self):
-        pass
+        box = MDBoxLayout(orientation="vertical", spacing="10dp", adaptive_height=True)
+        
+        target_field = MDTextField(hint_text="Нікнейм гравця", mode="round")
+        amount_field = MDTextField(hint_text="Зміна балансу (напр. 500 або -200)", mode="round", input_filter="int")
+        role_field = MDTextField(hint_text="Нова роль (Громадянин, VIP, Король)", mode="round")
+
+        btn_give = MDRaisedButton(
+            text="ЗМІНИТИ БАЛАНС / РОЛЬ",
+            md_bg_color=(0.85, 0.65, 0.13, 1),
+            text_color=(0, 0, 0, 1),
+            on_release=lambda x: self.exec_admin_action(target_field.text, amount_field.text, role_field.text)
+        )
+
+        box.add_widget(target_field)
+        box.add_widget(amount_field)
+        box.add_widget(role_field)
+        box.add_widget(btn_give)
+
+        self.dialog = MDDialog(
+            title="👑 Панель Управління Королівством",
+            type="custom",
+            content_cls=box,
+            buttons=[
+                MDRaisedButton(text="Закрити", on_release=lambda x: self.dialog.dismiss())
+            ]
+        )
+        self.dialog.open()
+
+    def exec_admin_action(self, target, amount, role):
+        if target:
+            try:
+                payload = {
+                    "admin": self.user_data['username'],
+                    "target": target,
+                    "amount": float(amount) if amount else 0,
+                    "role": role if role else None
+                }
+                requests.post(f"{SERVER_URL}/admin_action", json=payload, timeout=3)
+                self.update_header()
+            except Exception:
+                pass
+        if self.dialog:
+            self.dialog.dismiss()
 
 
 class AsgardApp(MDApp):
