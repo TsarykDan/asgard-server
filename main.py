@@ -1,519 +1,473 @@
 import sys
+from kivy.app import App
 from kivy.lang import Builder
+from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
+from kivy.uix.button import Button
+from kivy.uix.textinput import TextInput
+from kivy.uix.scrollview import ScrollView
 from kivy.core.window import Window
-from kivymd.app import MDApp
-from kivymd.uix.screen import MDScreen
-from kivymd.uix.button import MDRaisedButton, MDFlatButton
-from kivymd.uix.label import MDLabel
-from kivymd.uix.card import MDCard
-from kivymd.uix.toast import toast
-
-# Адаптація розміру під мобільний екран при тестуванні на ПК
-# Window.size = (360, 740)
 
 KV = '''
 <MainScreen>:
-    md_bg_color: 0.05, 0.07, 0.12, 1
-
     BoxLayout:
         orientation: 'vertical'
-
-        # --- ВЕРХНЯ ПАНЕЛЬ: ІНФОРМАЦІЯ ПРО ГРАВЦЯ ---
-        MDBoxLayout:
+        
+        # --- ВЕРХНЯ ПАНЕЛЬ: СТАТУС ГРАВЦЯ ---
+        BoxLayout:
             size_hint_y: None
-            height: "50dp"
-            md_bg_color: 0.02, 0.03, 0.06, 1
-            padding: ["8dp", "4dp"]
-            spacing: "5dp"
+            height: '45dp'
+            padding: ['8dp', '4dp']
+            canvas.before:
+                Color:
+                    rgba: 0.05, 0.08, 0.15, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
 
             ScrollView:
                 do_scroll_y: False
                 do_scroll_x: True
-                MDBoxLayout:
-                    adaptive_width: True
-                    spacing: "10dp"
-                    alignment: "center"
-                    
-                    MDLabel:
-                        id: player_info
-                        text: "[color=ffcc00][Гравець: test (ID: --)][/color] | [color=ffffff][Титул: Громадянин][/color] | [color=ffcc00][Капітал: 1000000.00][/color] | [color=00ffcc][Баланс: 0.00 юнітів][/color]"
-                        markup: True
-                        font_style: "Caption"
-                        adaptive_width: True
+                Label:
+                    id: player_info
+                    text: "[color=ffcc00][Гравець: test (ID: --)][/color] | [color=ffffff][Титул: Громадянин][/color] | [color=ffcc00][Капітал: 1000000.00][/color] | [color=00ffcc][Баланс: 0.00 Ю][/color]"
+                    markup: True
+                    size_hint_x: None
+                    width: self.texture_size[0] + 20
+                    font_size: '13sp'
 
         # --- ВЕРХНІ КНОПКИ ДІЙ (ПОШТА, АДМІН, ВИХІД) ---
-        MDBoxLayout:
+        BoxLayout:
             size_hint_y: None
-            height: "40dp"
-            md_bg_color: 0.08, 0.1, 0.15, 1
-            padding: ["5dp", "2dp"]
-            spacing: "5dp"
+            height: '38dp'
+            spacing: '5dp'
+            padding: ['5dp', '2dp']
+            canvas.before:
+                Color:
+                    rgba: 0.08, 0.1, 0.15, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
 
-            MDRaisedButton:
+            Button:
                 text: "✉ Пошта"
-                md_bg_color: 0.1, 0.4, 0.6, 1
-                font_size: "11sp"
-                on_release: app.show_toast("Розділ Пошта у розробці")
+                size_hint_x: 0.3
+                background_normal: ''
+                background_color: 0.1, 0.4, 0.6, 1
+                font_size: '12sp'
+                on_release: root.show_status("Розділ Пошта у розробці")
 
-            MDRaisedButton:
-                id: btn_admin
+            Button:
                 text: "Пульт Адміна"
-                md_bg_color: 0.8, 0.1, 0.1, 1
-                font_size: "11sp"
+                size_hint_x: 0.4
+                background_normal: ''
+                background_color: 0.8, 0.1, 0.1, 1
+                font_size: '12sp'
                 on_release: root.change_tab("admin")
 
-            Widget:
-
-            MDRaisedButton:
+            Button:
                 text: "Вихід"
-                md_bg_color: 0.7, 0.1, 0.1, 1
-                font_size: "11sp"
+                size_hint_x: 0.3
+                background_normal: ''
+                background_color: 0.5, 0.1, 0.1, 1
+                font_size: '12sp'
                 on_release: app.stop()
 
-        # --- ГОРИЗОНТАЛЬНЕ МЕНЮ ВКЛАДОК (НАВІГАЦІЯ) ---
-        MDBoxLayout:
+        # --- ГОРИЗОНТАЛЬНЕ МЕНЮ ВКЛАДОК ---
+        BoxLayout:
             size_hint_y: None
-            height: "45dp"
-            md_bg_color: 0.1, 0.14, 0.22, 1
+            height: '45dp'
+            canvas.before:
+                Color:
+                    rgba: 0.1, 0.14, 0.22, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
 
             ScrollView:
                 do_scroll_y: False
                 do_scroll_x: True
                 bar_width: 0
 
-                MDBoxLayout:
-                    adaptive_width: True
-                    spacing: "2dp"
-                    padding: ["2dp", "2dp"]
+                BoxLayout:
+                    size_hint_x: None
+                    width: self.minimum_width
+                    spacing: '4dp'
+                    padding: ['4dp', '4dp']
 
-                    MDRaisedButton:
+                    Button:
                         text: "Чат"
-                        md_bg_color: 0.18, 0.24, 0.35, 1
+                        size_hint_x: None
+                        width: '80dp'
+                        background_normal: ''
+                        background_color: 0.18, 0.24, 0.35, 1
                         on_release: root.change_tab("chat")
-                    MDRaisedButton:
+                    Button:
                         text: "Карта"
-                        md_bg_color: 0.18, 0.24, 0.35, 1
+                        size_hint_x: None
+                        width: '80dp'
+                        background_normal: ''
+                        background_color: 0.18, 0.24, 0.35, 1
                         on_release: root.change_tab("map")
-                    MDRaisedButton:
+                    Button:
                         text: "Політична"
-                        md_bg_color: 0.18, 0.24, 0.35, 1
+                        size_hint_x: None
+                        width: '95dp'
+                        background_normal: ''
+                        background_color: 0.18, 0.24, 0.35, 1
                         on_release: root.change_tab("politics")
-                    MDRaisedButton:
+                    Button:
                         text: "ЛС"
-                        md_bg_color: 0.18, 0.24, 0.35, 1
+                        size_hint_x: None
+                        width: '70dp'
+                        background_normal: ''
+                        background_color: 0.18, 0.24, 0.35, 1
                         on_release: root.change_tab("pm")
-                    MDRaisedButton:
+                    Button:
                         text: "Перекази"
-                        md_bg_color: 0.18, 0.24, 0.35, 1
+                        size_hint_x: None
+                        width: '90dp'
+                        background_normal: ''
+                        background_color: 0.18, 0.24, 0.35, 1
                         on_release: root.change_tab("transfers")
-                    MDRaisedButton:
+                    Button:
                         text: "Казино"
-                        md_bg_color: 0.18, 0.24, 0.35, 1
+                        size_hint_x: None
+                        width: '80dp'
+                        background_normal: ''
+                        background_color: 0.18, 0.24, 0.35, 1
                         on_release: root.change_tab("casino")
-                    MDRaisedButton:
+                    Button:
                         text: "Магазин"
-                        md_bg_color: 0.18, 0.24, 0.35, 1
+                        size_hint_x: None
+                        width: '90dp'
+                        background_normal: ''
+                        background_color: 0.18, 0.24, 0.35, 1
                         on_release: root.change_tab("shop")
-                    MDRaisedButton:
+                    Button:
                         text: "Ринок"
-                        md_bg_color: 0.18, 0.24, 0.35, 1
+                        size_hint_x: None
+                        width: '80dp'
+                        background_normal: ''
+                        background_color: 0.18, 0.24, 0.35, 1
                         on_release: root.change_tab("market")
-                    MDRaisedButton:
+                    Button:
                         text: "Громадяни"
-                        md_bg_color: 0.18, 0.24, 0.35, 1
+                        size_hint_x: None
+                        width: '100dp'
+                        background_normal: ''
+                        background_color: 0.18, 0.24, 0.35, 1
                         on_release: root.change_tab("citizens")
-                    MDRaisedButton:
+                    Button:
                         text: "Закони"
-                        md_bg_color: 0.18, 0.24, 0.35, 1
+                        size_hint_x: None
+                        width: '80dp'
+                        background_normal: ''
+                        background_color: 0.18, 0.24, 0.35, 1
                         on_release: root.change_tab("laws")
 
-        # --- ОСНОВНИЙ КОНТЕНТ (SCREEN MANAGER) ---
+        # --- ОСНОВНИЙ ЕКРАН СИСТЕМИ ---
         ScreenManager:
             id: sm
 
             # 1. ЧАТ
-            MDScreen:
+            Screen:
                 name: "chat"
-                MDBoxLayout:
+                BoxLayout:
                     orientation: 'vertical'
-                    padding: "8dp"
-                    spacing: "8dp"
+                    padding: '8dp'
+                    spacing: '6dp'
 
-                    MDLabel:
-                        text: "[БЕЗПЕКА]: Немає активних указів верхівки."
-                        halign: "center"
-                        theme_text_color: "Custom"
-                        text_color: 1, 0.8, 0, 1
-                        font_style: "Caption"
+                    Label:
+                        text: "[color=ffcc00][БЕЗПЕКА]: Немає активних указів верхівки.[/color]"
+                        markup: True
                         size_hint_y: None
-                        height: "20dp"
+                        height: '20dp'
+                        font_size: '12sp'
 
                     ScrollView:
-                        MDBoxLayout:
+                        BoxLayout:
                             id: chat_logs
                             orientation: 'vertical'
-                            adaptive_height: True
-                            spacing: "5dp"
-                            MDLabel:
+                            size_hint_y: None
+                            height: self.minimum_height
+                            spacing: '4dp'
+                            Label:
                                 text: "Ласкаво просимо до загального чату Азгарду!"
-                                theme_text_color: "Hint"
-                                font_style: "Body2"
+                                size_hint_y: None
+                                height: '25dp'
+                                color: 0.6, 0.6, 0.6, 1
 
-                    MDBoxLayout:
+                    BoxLayout:
                         size_hint_y: None
-                        height: "50dp"
-                        spacing: "5dp"
+                        height: '42dp'
+                        spacing: '5dp'
 
-                        MDTextField:
+                        TextInput:
                             id: chat_input
-                            hint_text: "Напишіть повідомлення в бесіду..."
-                            mode: "fill"
-                            fill_color: 0.12, 0.16, 0.24, 1
+                            hint_text: "Повідомлення..."
+                            multiline: False
 
-                        MDRaisedButton:
+                        Button:
                             text: "Надіслати"
-                            md_bg_color: 0.8, 0.6, 0.1, 1
+                            size_hint_x: None
+                            width: '100dp'
+                            background_normal: ''
+                            background_color: 0.8, 0.6, 0.1, 1
                             on_release: root.send_chat_msg()
 
-                    MDRaisedButton:
-                        text: "[УВАГА] Подати скаргу на порушника закону"
-                        md_bg_color: 0.5, 0.1, 0.1, 1
-                        size_hint_x: 1
+                    Button:
+                        text: "[УВАГА] Подати скаргу на порушника"
                         size_hint_y: None
-                        height: "40dp"
-                        on_release: app.show_toast("Скаргу надіслано модерації")
+                        height: '35dp'
+                        background_normal: ''
+                        background_color: 0.5, 0.1, 0.1, 1
+                        on_release: root.show_status("Скаргу надіслано")
 
             # 2. ПРИВАТНІ ПОВІДОМЛЕННЯ (ЛС)
-            MDScreen:
+            Screen:
                 name: "pm"
-                MDBoxLayout:
+                BoxLayout:
                     orientation: 'vertical'
-                    padding: "10dp"
-                    spacing: "10dp"
+                    padding: '10dp'
+                    spacing: '8dp'
 
-                    MDLabel:
-                        text: "=== ПРИВАТНІ ПОВІДОМЛЕННЯ (ЛС) ==="
-                        halign: "center"
-                        theme_text_color: "Custom"
-                        text_color: 1, 0.8, 0, 1
-                        font_style: "Subtitle1"
+                    Label:
+                        text: "=== ПРИВАТНІ ПОВІДОМЛЕННЯ ==="
                         size_hint_y: None
-                        height: "30dp"
+                        height: '25dp'
+                        color: 1, 0.8, 0, 1
 
-                    MDTextField:
+                    TextInput:
                         id: pm_target
-                        hint_text: "Уведіть нікнейм або ID отримувача..."
-                        mode: "rectangle"
+                        hint_text: "Нікнейм або ID..."
+                        size_hint_y: None
+                        height: '40dp'
+                        multiline: False
 
                     ScrollView:
-                        MDBoxLayout:
+                        BoxLayout:
                             id: pm_logs
                             orientation: 'vertical'
-                            adaptive_height: True
+                            size_hint_y: None
+                            height: self.minimum_height
 
-                    MDBoxLayout:
+                    BoxLayout:
                         size_hint_y: None
-                        height: "50dp"
-                        spacing: "5dp"
+                        height: '42dp'
+                        spacing: '5dp'
 
-                        MDTextField:
+                        TextInput:
                             id: pm_input
-                            hint_text: "Текст приватного повідомлення..."
-                            mode: "fill"
+                            hint_text: "Текст ЛС..."
+                            multiline: False
 
-                        MDRaisedButton:
-                            text: "Надіслати ЛС"
-                            md_bg_color: 0.8, 0.6, 0.1, 1
+                        Button:
+                            text: "Надіслати"
+                            size_hint_x: None
+                            width: '100dp'
+                            background_normal: ''
+                            background_color: 0.8, 0.6, 0.1, 1
                             on_release: root.send_pm_msg()
 
-            # 3. ПЕРЕКАЗИ (КІБЕР-БАНКІНГ)
-            MDScreen:
+            # 3. ПЕРЕКАЗИ
+            Screen:
                 name: "transfers"
                 ScrollView:
-                    MDBoxLayout:
+                    BoxLayout:
                         orientation: 'vertical'
-                        adaptive_height: True
-                        padding: "15dp"
-                        spacing: "15dp"
+                        size_hint_y: None
+                        height: self.minimum_height
+                        padding: '15dp'
+                        spacing: '12dp'
 
-                        MDLabel:
-                            text: "=== КІБЕР-БАНКІНГ: ПЕРЕКАЗ ЮНІТІВ ==="
-                            halign: "center"
-                            theme_text_color: "Custom"
-                            text_color: 1, 0.8, 0, 1
-                            font_style: "H6"
+                        Label:
+                            text: "=== ПЕРЕКАЗ ЮНІТІВ ==="
+                            size_hint_y: None
+                            height: '30dp'
+                            color: 1, 0.8, 0, 1
+                            font_size: '16sp'
 
-                        MDTextField:
+                        TextInput:
                             id: transfer_target
-                            hint_text: "Нікнейм або ID отримувача..."
-                            mode: "rectangle"
+                            hint_text: "Отримувач (Нік/ID)..."
+                            size_hint_y: None
+                            height: '42dp'
+                            multiline: False
 
-                        MDTextField:
+                        TextInput:
                             id: transfer_amount
-                            hint_text: "Сума переказу (Ю)..."
-                            input_filter: "float"
-                            mode: "rectangle"
+                            hint_text: "Сума (Ю)..."
+                            size_hint_y: None
+                            height: '42dp'
+                            multiline: False
 
-                        MDRaisedButton:
-                            text: "🖩 ПЕРЕКАЗАТИ КОШТИ 🖩"
-                            size_hint_x: 1
-                            height: "50dp"
-                            md_bg_color: 0.8, 0.6, 0.1, 1
+                        Button:
+                            text: "ПЕРЕКАЗАТИ КОШТИ"
+                            size_hint_y: None
+                            height: '45dp'
+                            background_normal: ''
+                            background_color: 0.8, 0.6, 0.1, 1
                             on_release: root.make_transfer()
 
-                        MDLabel:
-                            text: "Миттєвий переказ грошей підданим Азгарду."
-                            halign: "center"
-                            theme_text_color: "Hint"
-
             # 4. КАЗИНО
-            MDScreen:
+            Screen:
                 name: "casino"
                 ScrollView:
-                    MDBoxLayout:
+                    BoxLayout:
                         orientation: 'vertical'
-                        adaptive_height: True
-                        padding: "15dp"
-                        spacing: "12dp"
+                        size_hint_y: None
+                        height: self.minimum_height
+                        padding: '15dp'
+                        spacing: '10dp'
 
-                        MDLabel:
-                            text: "=== КАЗИНО АЗГАРДУ: КОЛЕСО ФОРТУНИ ==="
-                            halign: "center"
-                            theme_text_color: "Custom"
-                            text_color: 1, 0.8, 0, 1
-                            font_style: "Subtitle1"
+                        Label:
+                            text: "=== КАЗИНО АЗГАРДУ ==="
+                            size_hint_y: None
+                            height: '30dp'
+                            color: 1, 0.8, 0, 1
 
-                        MDLabel:
-                            text: "СЕКТОРИ КОЛЕСА:\\n• 2x (Подвоєння) — Шанс 10%\\n• x0.5 (Повернення 50%) — Шанс 20%\\n• 4x БАНКРУТ (Втрата) — Шанс 70%"
-                            halign: "center"
-                            theme_text_color: "Custom"
-                            text_color: 0.8, 0.8, 0.8, 1
+                        Label:
+                            text: "• 2x — Шанс 10%\\n• x0.5 — Шанс 20%\\n• БАНКРУТ — Шанс 70%"
+                            size_hint_y: None
+                            height: '60dp'
 
-                        MDTextField:
+                        TextInput:
                             id: casino_bet
-                            hint_text: "Введіть суму ставки (Ю)..."
-                            input_filter: "float"
-                            mode: "rectangle"
+                            hint_text: "Сума ставки (Ю)..."
+                            size_hint_y: None
+                            height: '42dp'
+                            multiline: False
 
-                        MDRaisedButton:
+                        Button:
                             text: "🎲 КРУТИТИ КОЛЕСО 🎲"
-                            size_hint_x: 1
-                            height: "50dp"
-                            md_bg_color: 0.8, 0.6, 0.1, 1
+                            size_hint_y: None
+                            height: '45dp'
+                            background_normal: ''
+                            background_color: 0.8, 0.6, 0.1, 1
                             on_release: root.play_casino()
 
-            # 5. ДЕРЖАВНИЙ МАГАЗИН
-            MDScreen:
+            # 5. МАГАЗИН
+            Screen:
                 name: "shop"
                 ScrollView:
-                    MDBoxLayout:
+                    BoxLayout:
                         orientation: 'vertical'
-                        adaptive_height: True
-                        padding: "10dp"
-                        spacing: "10dp"
+                        size_hint_y: None
+                        height: self.minimum_height
+                        padding: '12dp'
+                        spacing: '10dp'
 
-                        MDLabel:
-                            text: "=== ДЕРЖАВНИЙ МАГАЗИН АЗГАРДУ ==="
-                            halign: "center"
-                            theme_text_color: "Custom"
-                            text_color: 1, 0.8, 0, 1
-                            font_style: "H6"
+                        Label:
+                            text: "=== ДЕРЖАВНИЙ МАГАЗИН ==="
+                            size_hint_y: None
+                            height: '30dp'
+                            color: 1, 0.8, 0, 1
 
-                        MDLabel:
-                            text: "--- ВІП СТАТУСИ ---"
-                            halign: "center"
-                            theme_text_color: "Custom"
-                            text_color: 1, 0.8, 0, 1
+                        Button:
+                            text: "Купити ВІП 1 (700 Ю)"
+                            size_hint_y: None
+                            height: '42dp'
+                            on_release: root.show_status("Придбано VIP 1")
 
-                        # Елементи магазину
-                        MDBoxLayout:
-                            adaptive_height: True
-                            spacing: "10dp"
-                            MDBoxLayout:
-                                orientation: 'vertical'
-                                MDLabel:
-                                    text: "Вiпка (Рiвень 1)"
-                                    bold: True
-                                MDLabel:
-                                    text: "+10% до зарплати"
-                                    font_style: "Caption"
-                            MDLabel:
-                                text: "700 Ю"
-                                adaptive_width: True
-                            MDRaisedButton:
-                                text: "Купити"
-                                md_bg_color: 0.8, 0.6, 0.1, 1
-                                on_release: app.show_toast("Придбано VIP 1")
+                        Button:
+                            text: "Купити ВІП 2 (1000 Ю)"
+                            size_hint_y: None
+                            height: '42dp'
+                            on_release: root.show_status("Придбано VIP 2")
 
-                        MDBoxLayout:
-                            adaptive_height: True
-                            spacing: "10dp"
-                            MDBoxLayout:
-                                orientation: 'vertical'
-                                MDLabel:
-                                    text: "Вiпка 2 (Рiвень 2)"
-                                    bold: True
-                                MDLabel:
-                                    text: "+20% до зарплати"
-                                    font_style: "Caption"
-                            MDLabel:
-                                text: "1000 Ю"
-                                adaptive_width: True
-                            MDRaisedButton:
-                                text: "Купити"
-                                md_bg_color: 0.8, 0.6, 0.1, 1
-                                on_release: app.show_toast("Придбано VIP 2")
-
-                        MDLabel:
-                            text: "--- ДЕРЖАВНІ ДОЗВОЛИ ---"
-                            halign: "center"
-                            theme_text_color: "Custom"
-                            text_color: 1, 0.8, 0, 1
-
-                        MDBoxLayout:
-                            adaptive_height: True
-                            spacing: "10dp"
-                            MDLabel:
-                                text: "Дозвiл на продаж"
-                            MDLabel:
-                                text: "500 Ю"
-                                adaptive_width: True
-                            MDRaisedButton:
-                                text: "Придбати"
-                                md_bg_color: 0.8, 0.6, 0.1, 1
-                                on_release: app.show_toast("Отримано дозвіл на продаж")
-
-                        MDBoxLayout:
-                            adaptive_height: True
-                            spacing: "10dp"
-                            MDLabel:
-                                text: "Дозвiл на зброю"
-                            MDLabel:
-                                text: "250 Ю"
-                                adaptive_width: True
-                            MDRaisedButton:
-                                text: "Придбати"
-                                md_bg_color: 0.8, 0.6, 0.1, 1
-                                on_release: app.show_toast("Отримано дозвіл на зброю")
+                        Button:
+                            text: "Дозвіл на продаж (500 Ю)"
+                            size_hint_y: None
+                            height: '42dp'
+                            on_release: root.show_status("Отримано дозвіл")
 
             # 6. ПУЛЬТ АДМІНА
-            MDScreen:
+            Screen:
                 name: "admin"
                 ScrollView:
-                    MDBoxLayout:
+                    BoxLayout:
                         orientation: 'vertical'
-                        adaptive_height: True
-                        padding: "10dp"
-                        spacing: "10dp"
+                        size_hint_y: None
+                        height: self.minimum_height
+                        padding: '12dp'
+                        spacing: '10dp'
 
-                        MDLabel:
-                            text: "=== ПУЛЬТ АБСОЛЮТНОГО АДМІНІСТРУВАННЯ ==="
-                            halign: "center"
-                            theme_text_color: "Custom"
-                            text_color: 1, 0.2, 0.2, 1
-                            font_style: "Subtitle1"
+                        Label:
+                            text: "=== ПУЛЬТ АДМІНІСТРУВАННЯ ==="
+                            size_hint_y: None
+                            height: '30dp'
+                            color: 1, 0.2, 0.2, 1
 
-                        # Дисциплінарний комітет
-                        MDLabel:
-                            text: "Дисциплiнарний Комiтет (Бан/Розбан):"
-                            theme_text_color: "Custom"
-                            text_color: 1, 0.8, 0, 1
-                        MDTextField:
-                            id: admin_target_ban
-                            hint_text: "Нiк або ID..."
-                            mode: "rectangle"
-                        MDBoxLayout:
-                            adaptive_height: True
-                            spacing: "5dp"
-                            MDRaisedButton:
+                        TextInput:
+                            hint_text: "Нік або ID гравця..."
+                            size_hint_y: None
+                            height: '42dp'
+
+                        BoxLayout:
+                            size_hint_y: None
+                            height: '42dp'
+                            spacing: '5dp'
+                            Button:
                                 text: "Забанити"
-                                md_bg_color: 0.8, 0.1, 0.1, 1
-                                size_hint_x: 0.5
-                                on_release: app.show_toast("Гравця забанено")
-                            MDRaisedButton:
+                                background_normal: ''
+                                background_color: 0.8, 0.1, 0.1, 1
+                                on_release: root.show_status("Гравця забанено")
+                            Button:
                                 text: "Розбанити"
-                                md_bg_color: 0.1, 0.6, 0.1, 1
-                                size_hint_x: 0.5
-                                on_release: app.show_toast("Гравця розбанено")
+                                background_normal: ''
+                                background_color: 0.1, 0.6, 0.1, 1
+                                on_release: root.show_status("Гравця розбанено")
 
-                        # Казначея
-                        MDLabel:
-                            text: "Державна Казначея (Юнiти):"
-                            theme_text_color: "Custom"
-                            text_color: 1, 0.8, 0, 1
-                        MDTextField:
-                            id: admin_target_money
-                            hint_text: "Нiк або ID..."
-                            mode: "rectangle"
-                        MDTextField:
-                            id: admin_amount_money
-                            hint_text: "Сума..."
-                            input_filter: "float"
-                            mode: "rectangle"
-                        MDBoxLayout:
-                            adaptive_height: True
-                            spacing: "5dp"
-                            MDRaisedButton:
-                                text: "+ Дати"
-                                md_bg_color: 0.1, 0.6, 0.1, 1
-                                size_hint_x: 0.33
-                                on_release: app.show_toast("Кошти додано")
-                            MDRaisedButton:
-                                text: "- Забрати"
-                                md_bg_color: 0.6, 0.3, 0.1, 1
-                                size_hint_x: 0.33
-                                on_release: app.show_toast("Кошти забрано")
-                            MDRaisedButton:
-                                text: "= Встановити"
-                                md_bg_color: 0.1, 0.4, 0.7, 1
-                                size_hint_x: 0.33
-                                on_release: app.show_toast("Баланс встановлено")
-
-                        MDRaisedButton:
-                            text: "Закрити пульт керування"
-                            size_hint_x: 1
-                            md_bg_color: 0.2, 0.2, 0.2, 1
+                        Button:
+                            text: "Закрити пульт"
+                            size_hint_y: None
+                            height: '40dp'
+                            background_normal: ''
+                            background_color: 0.3, 0.3, 0.3, 1
                             on_release: root.change_tab("chat")
 
-            # Інші пусті/запасні розділи
-            MDScreen:
+            # Інші вкладки
+            Screen:
                 name: "map"
-                MDLabel:
+                Label:
                     text: "Карта Азгарду завантажується..."
-                    halign: "center"
-            MDScreen:
+            Screen:
                 name: "politics"
-                MDLabel:
+                Label:
                     text: "Політична система у розробці."
-                    halign: "center"
-            MDScreen:
+            Screen:
                 name: "market"
-                MDLabel:
+                Label:
                     text: "Вільний ринок порожній."
-                    halign: "center"
-            MDScreen:
+            Screen:
                 name: "citizens"
-                MDLabel:
+                Label:
                     text: "Список громадян Азгарду..."
-                    halign: "center"
-            MDScreen:
+            Screen:
                 name: "laws"
-                MDLabel:
+                Label:
                     text: "Конституція та закони Азгарду."
-                    halign: "center"
 '''
 
-class MainScreen(MDScreen):
+class MainScreen(Screen):
     def change_tab(self, tab_name):
         self.ids.sm.current = tab_name
+
+    def show_status(self, text):
+        print(f"[STATUS]: {text}")
 
     def send_chat_msg(self):
         msg = self.ids.chat_input.text.strip()
         if msg:
-            lbl = MDLabel(
+            lbl = Label(
                 text=f"[color=00ffcc]Ви:[/color] {msg}",
                 markup=True,
-                adaptive_height=True
+                size_hint_y=None,
+                height='25dp',
+                halign='left',
+                text_size=(Window.width - 30, None)
             )
             self.ids.chat_logs.add_widget(lbl)
             self.ids.chat_input.text = ""
@@ -522,37 +476,34 @@ class MainScreen(MDScreen):
         target = self.ids.pm_target.text.strip()
         msg = self.ids.pm_input.text.strip()
         if target and msg:
-            lbl = MDLabel(
+            lbl = Label(
                 text=f"[color=ffcc00]До {target}:[/color] {msg}",
                 markup=True,
-                adaptive_height=True
+                size_hint_y=None,
+                height='25dp',
+                halign='left',
+                text_size=(Window.width - 30, None)
             )
             self.ids.pm_logs.add_widget(lbl)
             self.ids.pm_input.text = ""
-            MDApp.get_running_app().show_toast("Повідомлення надіслано!")
 
     def make_transfer(self):
         target = self.ids.transfer_target.text.strip()
         amount = self.ids.transfer_amount.text.strip()
         if target and amount:
-            MDApp.get_running_app().show_toast(f"Успішно переказано {amount} Ю гравцю {target}")
+            print(f"[TRANSFER]: {amount} Ю -> {target}")
             self.ids.transfer_target.text = ""
             self.ids.transfer_amount.text = ""
 
     def play_casino(self):
         bet = self.ids.casino_bet.text.strip()
         if bet:
-            MDApp.get_running_app().show_toast(f"Ставка {bet} Ю прийнята! Ставимо...")
+            print(f"[CASINO]: Ставка {bet} Ю прийнята!")
+            self.ids.casino_bet.text = ""
 
-
-class AsgardApp(MDApp):
+class AsgardApp(App):
     def build(self):
-        self.theme_cls.theme_style = "Dark"
-        self.theme_cls.primary_palette = "Amber"
         return Builder.load_string(KV)
-
-    def show_toast(self, text):
-        toast(text)
 
 if __name__ == '__main__':
     AsgardApp().run()
