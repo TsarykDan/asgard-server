@@ -3,9 +3,12 @@ import sys
 from datetime import datetime
 import requests
 
+# --- НАЛАШТУВАННЯ ВІКНА ДЛЯ МОБІЛЬНИХ ПРИСТРОЇВ ---
+from kivy.core.window import Window
+Window.maximize()  # Розгортаємо вікно на весь екран пристрою
+
 from kivy.app import App
 from kivy.clock import Clock
-from kivy.core.window import Window
 from kivy.graphics import Color, Rectangle, RoundedRectangle
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -1147,8 +1150,6 @@ class MainGameScreen(ColoredScreen):
 
 class AsgardApp(App):
     def build(self):
-        Window.size = (360, 720)
-        
         self.current_user = {}
         self.sm = ScreenManager()
         self.sm.add_widget(LoginScreen(name='login'))
