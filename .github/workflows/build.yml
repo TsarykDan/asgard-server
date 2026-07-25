@@ -10,32 +10,61 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Перевірка коду (Checkout)
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Налаштування Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install System Dependencies
+      - name: Встановлення системних залежностей
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential ccache git libffi-dev libssl-dev python3-dev \
-            libltdl-dev libpcre2-dev openjdk-17-jdk unzip zip zlib1g-dev \
-            autoconf automake libtool pkg-config cmake
+          sudo apt-get install -y \
+            build-essential \
+            ccache \
+            git \
+            libffi-dev \
+            libssl-dev \
+            python3-dev \
+            libltdl-dev \
+            libpcre2-dev \
+            openjdk-17-jdk \
+            unzip \
+            zip \
+            zlib1g-dev \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config \
+            cmake
 
-      - name: Install Buildozer & Cython
+      - name: Кешування залежностей Buildozer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.buildozer
+            .buildozer
+          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
+          restore-keys: |
+            ${{ runner.os }}-buildozer-
+
+      - name: Встановлення Buildozer та Cython
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip setuptools
           pip install buildozer "cython<3.0.0"
 
-      - name: Build APK with Buildozer
+      - name: Збірка APK за допомогою Buildozer
+        env:
+          ACCEPT_SDK_LICENSE: "1"
         run: |
+          # Автоматично приймаємо ліцензії Android SDK
           yes | buildozer -v android debug
 
-      - name: Upload APK Artifact
+      - name: Завантаження готового APK
         uses: actions/upload-artifact@v4
         with:
           name: Asgard-App-APK
           path: bin/*.apk
+          if-no-files-found: error
