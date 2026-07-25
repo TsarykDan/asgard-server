@@ -6,19 +6,18 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.core.window import Window
 
-# Налаштовуємо початковий розмір вікна для зручності
-Window.size = (450, 750)
-
 KV = '''
 #:import SlideTransition kivy.uix.screenmanager.SlideTransition
 
 <MainLayout>:
     orientation: 'vertical'
+    size_hint: (1, 1)
+    pos_hint: {'x': 0, 'y': 0}
 
     # --- ВЕРХНЯ ПАНЕЛЬ: СТАТУС ГРАВЦЯ ---
     BoxLayout:
         size_hint_y: None
-        height: '45dp'
+        height: '48dp'
         padding: ['8dp', '4dp']
         canvas.before:
             Color:
@@ -41,7 +40,7 @@ KV = '''
     # --- КНОПКИ ШВИДКОЇ ДІЇ ---
     BoxLayout:
         size_hint_y: None
-        height: '38dp'
+        height: '40dp'
         spacing: '5dp'
         padding: ['5dp', '2dp']
         canvas.before:
@@ -78,7 +77,7 @@ KV = '''
     # --- ГОРИЗОНТАЛЬНЕ МЕНЮ ВКЛАДОК ---
     BoxLayout:
         size_hint_y: None
-        height: '45dp'
+        height: '48dp'
         canvas.before:
             Color:
                 rgba: 0.1, 0.14, 0.22, 1
@@ -100,42 +99,42 @@ KV = '''
                 Button:
                     text: "Чат"
                     size_hint_x: None
-                    width: '80dp'
+                    width: '90dp'
                     background_normal: ''
                     background_color: 0.18, 0.24, 0.35, 1
                     on_release: root.change_tab("chat")
                 Button:
                     text: "ЛС"
                     size_hint_x: None
-                    width: '70dp'
+                    width: '80dp'
                     background_normal: ''
                     background_color: 0.18, 0.24, 0.35, 1
                     on_release: root.change_tab("pm")
                 Button:
                     text: "Перекази"
                     size_hint_x: None
-                    width: '90dp'
+                    width: '100dp'
                     background_normal: ''
                     background_color: 0.18, 0.24, 0.35, 1
                     on_release: root.change_tab("transfers")
                 Button:
                     text: "Казино"
                     size_hint_x: None
-                    width: '80dp'
+                    width: '90dp'
                     background_normal: ''
                     background_color: 0.18, 0.24, 0.35, 1
                     on_release: root.change_tab("casino")
                 Button:
                     text: "Магазин"
                     size_hint_x: None
-                    width: '90dp'
+                    width: '100dp'
                     background_normal: ''
                     background_color: 0.18, 0.24, 0.35, 1
                     on_release: root.change_tab("shop")
                 Button:
                     text: "Карта"
                     size_hint_x: None
-                    width: '80dp'
+                    width: '90dp'
                     background_normal: ''
                     background_color: 0.18, 0.24, 0.35, 1
                     on_release: root.change_tab("info")
@@ -143,6 +142,7 @@ KV = '''
     # --- МЕНЕДЖЕР ЕКРАНІВ ---
     ScreenManager:
         id: sm
+        size_hint: (1, 1)
         ChatScreen:
             name: "chat"
         PMScreen:
@@ -170,7 +170,7 @@ KV = '''
             text: "[color=ffcc00][БЕЗПЕКА]: Системи Азгарду працюють у нормі.[/color]"
             markup: True
             size_hint_y: None
-            height: '20dp'
+            height: '25dp'
             font_size: '12sp'
 
         ScrollView:
@@ -188,7 +188,7 @@ KV = '''
 
         BoxLayout:
             size_hint_y: None
-            height: '42dp'
+            height: '45dp'
             spacing: '5dp'
 
             TextInput:
@@ -213,14 +213,14 @@ KV = '''
         Label:
             text: "=== ПРИВАТНІ ПОВІДОМЛЕННЯ ==="
             size_hint_y: None
-            height: '25dp'
+            height: '30dp'
             color: 1, 0.8, 0, 1
 
         TextInput:
             id: pm_target
             hint_text: "Отримувач (Нік / ID)..."
             size_hint_y: None
-            height: '40dp'
+            height: '42dp'
             multiline: False
 
         ScrollView:
@@ -232,7 +232,7 @@ KV = '''
 
         BoxLayout:
             size_hint_y: None
-            height: '42dp'
+            height: '45dp'
             spacing: '5dp'
 
             TextInput:
@@ -410,8 +410,6 @@ KV = '''
             text: "Розділ знаходиться у розробці..."
 '''
 
-# --- ЛОГІКА ЕКРАНІВ (PYTHON) ---
-
 class ChatScreen(Screen):
     def send_msg(self):
         msg = self.ids.chat_input.text.strip()
@@ -480,20 +478,18 @@ class CasinoScreen(Screen):
                     self.ids.casino_result.text = "Недостатньо Юнітів на балансі!"
                     return
 
-                # Знімаємо ставку
                 app.balance -= bet
                 
-                # Логіка рулетки
                 rand = random.random()
-                if rand < 0.30: # 30% виграш x2
+                if rand < 0.30:
                     win = bet * 2
                     app.balance += win
                     self.ids.casino_result.text = f"[color=00ff00]ВИГРАШ x2! (+{win} Ю)[/color]"
-                elif rand < 0.60: # 30% повернення 0.5x
+                elif rand < 0.60:
                     win = bet * 0.5
                     app.balance += win
                     self.ids.casino_result.text = f"[color=ffcc00]Повернення 50% (+{win} Ю)[/color]"
-                else: # 40% банкрут
+                else:
                     self.ids.casino_result.text = "[color=ff0000]БАНКРУТ! Ставка згоріла.[/color]"
                 
                 self.ids.casino_result.markup = True
@@ -531,10 +527,8 @@ class MainLayout(BoxLayout):
     def change_tab(self, tab_name):
         self.ids.sm.current = tab_name
 
-# --- ГОЛОВНИЙ ДОДАТОК ---
-
 class AsgardApp(App):
-    balance = 1000.0  # Початковий баланс гравця
+    balance = 1000.0
 
     def build(self):
         Builder.load_string(KV)
