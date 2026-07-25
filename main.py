@@ -6,9 +6,11 @@ import requests
 # --- НАЛАШТУВАННЯ ВІКНА ТА АДАПТИВНОСТІ ---
 from kivy.metrics import dp, sp
 from kivy.core.window import Window
+from kivy.utils import platform
 
-# Для тестування на ПК симулюємо вертикальний екран смартфона:
-Window.size = (360, 740)
+# Задаємо фіксований розмір вікна ТІЛЬКИ для ПК, щоб на смартфоні інтерфейс розтягувався на весь екран
+if platform not in ('android', 'ios'):
+    Window.size = (360, 740)
 
 from kivy.app import App
 from kivy.clock import Clock
@@ -106,12 +108,12 @@ class LoginScreen(ColoredScreen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         
-        center_box = RelativeLayout()
+        center_box = RelativeLayout(size_hint=(1, 1))
         
         # Адаптивний контейнер форми
         card = BoxLayout(
             orientation='vertical', padding=dp(20), spacing=dp(12), 
-            size_hint=(0.9, None), height=dp(380),
+            size_hint=(0.88, None), height=dp(360),
             pos_hint={'center_x': 0.5, 'center_y': 0.5}
         )
         
@@ -218,7 +220,7 @@ class MainGameScreen(ColoredScreen):
         super().__init__(**kwargs)
         self.user_data = {}
         
-        self.main_layout = BoxLayout(orientation='vertical')
+        self.main_layout = BoxLayout(orientation='vertical', size_hint=(1, 1))
         
         # 1. Верхня Шапка
         self.header = BoxLayout(orientation='vertical', size_hint_y=None, height=dp(72), padding=[dp(8), dp(4)], spacing=dp(4))
